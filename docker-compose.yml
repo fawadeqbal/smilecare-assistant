@@ -1,0 +1,104 @@
+# Production-style stack for a single server:
+#   cp .env.example .env   # fill in secrets and your domain
+#   docker compose up -d --build
+#   docker compose run --rm api node dist/infrastructure/database/scripts/seed.js   # optional demo data
+#
+# Scale horizontally:  docker compose up -d --scale api=3 --scale worker=2
+
+x-api-env: &api-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://${POSTGRES_USER:-smilecare}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-smilecare}
+  REDIS_URL: redis://redis:6379
+  PUBLIC_API_URL: ${PUBLIC_URL:?set PUBLIC_URL}
+  ADMIN_CORS_ORIGINS: ${PUBLIC_URL}
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
+  CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-5-5}
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-voyage}
+  VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+  VOYAGE_MODEL: ${VOYAGE_MODEL:-voyage-4}
+  MAIL_PROVIDER: ${MAIL_PROVIDER:-console}
+  MAIL_FROM: ${MAIL_FROM:-SmileCare Assistant <no-reply@example.com>}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASS: ${SMTP_PASS:-}
+  SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@smilecare.dev}
+  SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMe123!}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-smilecare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-smilecare}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smilecare}"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # Applies database migrations, then exits. API and worker wait for it.
+  migrate:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    image: smilecare-api
+    command: ["node", "dist/infrastructure/database/scripts/migrate.js"]
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    image: smilecare-api
+    restart: unless-stopped
+    environment: *api-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  worker:
+    image: smilecare-api
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    environment: *api-env
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_WIDGET_SRC: ${PUBLIC_URL}/widget.js
+        NEXT_PUBLIC_WIDGET_KEY: ${DEMO_WIDGET_KEY:-pk_demo_smilecare}
+        NEXT_PUBLIC_API_PUBLIC_URL: ${PUBLIC_URL}
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:4000
+    depends_on: [api]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports: ["80:80"]
+    volumes: [./infra/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro]
+    depends_on: [api, web]
+
+volumes:
+  pgdata:
+  redisdata:

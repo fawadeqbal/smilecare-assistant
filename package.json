@@ -1,0 +1,22 @@
+{
+  "name": "smilecare-assistant",
+  "private": true,
+  "description": "AI customer-support chatbot (RAG + bookings + human handoff) built with Next.js, NestJS, PostgreSQL/pgvector and the Claude API.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter @smilecare/shared build && pnpm -r --parallel --filter=!@smilecare/shared run dev",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "db:migrate": "pnpm --filter @smilecare/api run db:migrate",
+    "db:seed": "pnpm --filter @smilecare/api run db:seed",
+    "infra:up": "docker compose -f docker-compose.dev.yml up -d",
+    "infra:down": "docker compose -f docker-compose.dev.yml down"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

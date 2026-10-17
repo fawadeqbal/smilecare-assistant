@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pine: #0e3b33;
+  --color-brand: #0e7c66;
+  --color-brand-dark: #0a5e4d;
+  --color-mint: #e3f1ec;
+  --color-porcelain: #fbfcfb;
+  --color-citrus: #f2c14e;
+  --color-slate: #5b6b66;
+  --color-line: #dce5e1;
+  --color-danger: #b42318;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color: var(--color-pine);
+  background: var(--color-porcelain);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-brand) 55%, white);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Price list leaders: "Cleaning ........ $119" */
+.leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.leader::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  border-bottom: 2px dotted var(--color-line);
+  transform: translateY(-0.3em);
+}
+.leader > :last-child {
+  order: 2;
+}

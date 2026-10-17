@@ -1,0 +1,18 @@
+{
+  "name": "@smilecare/widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Embeddable chat widget (vanilla TypeScript, Shadow DOM). Builds to a single dist/widget.js.",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@smilecare/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "5.9.3"
+  }
+}

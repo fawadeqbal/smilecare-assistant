@@ -1,0 +1,25 @@
+# Local development data stores. Run the apps on your machine with `pnpm dev`.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: smilecare
+      POSTGRES_PASSWORD: smilecare
+      POSTGRES_DB: smilecare
+    ports: ["5432:5432"]
+    volumes: [pgdata-dev:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smilecare"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata-dev:
