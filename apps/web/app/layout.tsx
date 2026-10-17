@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Bricolage_Grotesque, Public_Sans } from 'next/font/google';
+import { Figtree, Gabarito } from 'next/font/google';
 import './globals.css';
 
-const display = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-bricolage', display: 'swap' });
-const sans = Public_Sans({ subsets: ['latin'], variable: '--font-public-sans', display: 'swap' });
+const display = Gabarito({ subsets: ['latin'], variable: '--font-gabarito', display: 'swap' });
+const sans = Figtree({ subsets: ['latin'], variable: '--font-figtree', display: 'swap' });
 
 export const metadata: Metadata = {
   title: { default: 'SmileCare Dental Clinic', template: '%s · SmileCare' },
-  description: 'Gentle, modern dentistry in Riverside. Ask our assistant about treatments, prices and hours, or request an appointment.',
+  description: 'Gentle dentistry in Riverside, six days a week. Ask Sunny about treatments, prices and hours, or request an appointment.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

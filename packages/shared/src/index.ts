@@ -199,6 +199,10 @@ export interface ConversationSummary {
   status: ConversationStatus;
   messageCount: number;
   lastMessage: string | null;
+  /** The visitor's most recent message, e.g. to show what someone waiting for staff asked. */
+  lastVisitorMessage: string | null;
+  handoffReason: string | null;
+  handedOffAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -234,11 +238,36 @@ export interface UpdateBookingRequest {
 // Analytics (admin overview)
 // ---------------------------------------------------------------------------
 
+export const OVERVIEW_RANGES = [7, 14, 30] as const;
+export type OverviewRange = (typeof OVERVIEW_RANGES)[number];
+
+export interface DailyActivity {
+  date: string; // YYYY-MM-DD in the business's time zone
+  conversations: number;
+  bookings: number;
+}
+
 export interface OverviewStats {
-  conversations: { total: number; last7Days: number; handedOff: number };
-  bookings: { total: number; pending: number; confirmed: number };
-  documents: { total: number; ready: number };
-  daily: Array<{ date: string; conversations: number; bookings: number }>;
+  range: OverviewRange;
+  /** One entry per day for the selected range, oldest first. */
+  daily: DailyActivity[];
+  /** Last 7 days compared with the 7 days before. */
+  week: {
+    conversations: number;
+    conversationsPrev: number;
+    bookings: number;
+    bookingsPrev: number;
+    /** Conversations in the last 7 days that never needed staff. */
+    resolvedBySunny: number;
+    visitorMessages: number;
+  };
+  /** Last 14 days, oldest first, for KPI sparklines. */
+  sparks: { conversations: number[]; bookings: number[] };
+  waiting: { count: number; longestSince: string | null };
+  bookings: { pending: number };
+  documents: { total: number; ready: number; chunks: number; lastIndexedAt: string | null };
+  /** Knowledge documents Sunny answered from most often in the last 7 days. */
+  topTopics: Array<{ label: string; count: number }>;
 }
 
 // ---------------------------------------------------------------------------

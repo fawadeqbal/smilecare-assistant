@@ -20,9 +20,11 @@ export const clinic = {
   ] as Array<{ day: string; open: string | null; close: string | null }>,
 };
 
-export const treatments: Array<{ group: string; items: Array<{ name: string; price: string; note?: string }> }> = [
+export const treatments: Array<{ group: string; tone: 'ocean' | 'coral'; icon: 'check' | 'sparkle' | 'shield' | 'teeth'; items: Array<{ name: string; price: string }> }> = [
   {
     group: 'Checkups and cleaning',
+    tone: 'ocean',
+    icon: 'check',
     items: [
       { name: 'New patient exam with X-rays', price: '$149' },
       { name: 'Routine checkup', price: '$79' },
@@ -32,6 +34,8 @@ export const treatments: Array<{ group: string; items: Array<{ name: string; pri
   },
   {
     group: 'Cosmetic',
+    tone: 'coral',
+    icon: 'sparkle',
     items: [
       { name: 'In-office whitening, one visit', price: '$449' },
       { name: 'Take-home whitening kit', price: '$249' },
@@ -41,6 +45,8 @@ export const treatments: Array<{ group: string; items: Array<{ name: string; pri
   },
   {
     group: 'Restorative',
+    tone: 'ocean',
+    icon: 'shield',
     items: [
       { name: 'Tooth-colored filling', price: '$150–260' },
       { name: 'Root canal, molar', price: '$1,150' },
@@ -50,6 +56,8 @@ export const treatments: Array<{ group: string; items: Array<{ name: string; pri
   },
   {
     group: 'Orthodontics',
+    tone: 'coral',
+    icon: 'teeth',
     items: [
       { name: 'Braces or aligner consultation', price: 'Free' },
       { name: 'Clear aligners', price: 'from $3,900' },
@@ -61,7 +69,7 @@ export const treatments: Array<{ group: string; items: Array<{ name: string; pri
 export const insurers = ['Delta Dental PPO', 'Cigna Dental', 'MetLife', 'Aetna Dental', 'Guardian'];
 
 export const team = [
-  { name: 'Dr. Amina Rahman', role: 'General and cosmetic dentistry', years: 14 },
-  { name: 'Dr. Daniel Okafor', role: 'Root canals and implants', years: 11 },
-  { name: 'Dr. Sofia Marquez', role: 'Orthodontics and clear aligners', years: 9 },
+  { name: 'Dr. Amina Rahman', initials: 'AR', role: 'General and cosmetic dentistry', years: 14, tile: 'bg-ocean-100', ink: 'text-ocean-700' },
+  { name: 'Dr. Daniel Okafor', initials: 'DO', role: 'Root canals and implants', years: 11, tile: 'bg-coral-100', ink: 'text-coral-700' },
+  { name: 'Dr. Sofia Marquez', initials: 'SM', role: 'Orthodontics and clear aligners', years: 9, tile: 'bg-success-bg', ink: 'text-success-ink' },
 ];

@@ -17,6 +17,7 @@ export class ConversationsService {
       items: items.map((c) => ({
         ...c,
         messageCount: Number(c.messageCount),
+        handedOffAt: c.handedOffAt?.toISOString() ?? null,
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),
       })),
@@ -38,6 +39,9 @@ export class ConversationsService {
       updatedAt: conversation.updatedAt.toISOString(),
       messageCount: rows.length,
       lastMessage: rows.at(-1)?.content ?? null,
+      lastVisitorMessage: rows.filter((m) => m.role === 'user').at(-1)?.content ?? null,
+      handoffReason: conversation.handoffReason,
+      handedOffAt: conversation.handedOffAt?.toISOString() ?? null,
       messages: rows.map(toChatMessage),
       bookings,
     };

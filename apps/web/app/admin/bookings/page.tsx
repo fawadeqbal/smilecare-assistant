@@ -5,7 +5,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { BookingBadge, Button, EmptyState, ErrorNote, PageHeader, Pager, Panel, Skeleton } from '@/components/admin/ui';
+import { BookingBadge, Button, EmptyState, ErrorNote, FilterPills, PageHeader, Pager, Panel, Skeleton } from '@/components/admin/ui';
+import { CheckIcon, CloseIcon, UploadIcon } from '@/components/icons';
 import { api } from '@/lib/api';
 import { dateTime, shortRef } from '@/lib/format';
 
@@ -41,25 +42,20 @@ function BookingsTable() {
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2">
-          {filters.map((f) => (
-            <button
-              key={f.value || 'all'}
-              role="tab"
-              aria-selected={status === f.value}
-              onClick={() => {
-                setPage(1);
-                router.replace(`/admin/bookings?status=${f.value}`);
-              }}
-              className={`rounded-full px-4 py-1.5 text-[15px] font-bold ring-1 transition-colors ${
-                status === f.value ? 'bg-pine text-white ring-pine' : 'bg-white text-slate ring-line hover:text-pine'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-        <a href="/api/backend/bookings/export.csv" className="text-[15px] font-bold text-brand hover:underline">
+        <FilterPills
+          label="Filter by status"
+          options={filters}
+          value={status}
+          onChange={(v) => {
+            setPage(1);
+            router.replace(`/admin/bookings?status=${v}`);
+          }}
+        />
+        <a
+          href="/api/backend/bookings/export.csv"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-ocean-50 px-5 text-[15px] font-bold text-ocean-700 no-underline hover:bg-ocean-100"
+        >
+          <UploadIcon size={18} className="rotate-180" />
           Download CSV
         </a>
       </div>
@@ -72,41 +68,41 @@ function BookingsTable() {
         ) : q.data?.items.length ? (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-[15px]">
-                <thead className="border-b border-line bg-porcelain text-sm text-slate">
+              <table className="w-full min-w-[780px] text-left text-[15px]">
+                <thead className="border-b border-line text-sm text-ink-500">
                   <tr>
-                    <th className="px-5 py-3 font-bold">Patient</th>
-                    <th className="px-5 py-3 font-bold">Service and time</th>
-                    <th className="px-5 py-3 font-bold">Received</th>
-                    <th className="px-5 py-3 font-bold">Status</th>
-                    <th className="px-5 py-3 font-bold">
+                    <th className="px-5 py-3.5 font-semibold">Patient</th>
+                    <th className="px-5 py-3.5 font-semibold">Service and time</th>
+                    <th className="px-5 py-3.5 font-semibold">Received</th>
+                    <th className="px-5 py-3.5 font-semibold">Status</th>
+                    <th className="px-5 py-3.5">
                       <span className="sr-only">Actions</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
                   {q.data.items.map((b) => (
-                    <tr key={b.id} className="align-top">
+                    <tr key={b.id} className="align-top hover:bg-cloud/60">
                       <td className="px-5 py-4">
                         <p className="font-bold">{b.patientName}</p>
-                        <a href={`tel:${b.phone}`} className="text-brand">
-                          {b.phone}
-                        </a>
-                        {b.email && <p className="text-sm text-slate">{b.email}</p>}
+                        <a href={`tel:${b.phone}`}>{b.phone}</a>
+                        {b.email && <p className="text-sm text-ink-500">{b.email}</p>}
                       </td>
                       <td className="px-5 py-4">
-                        <p>{b.service ?? 'Not specified'}</p>
-                        <p className="text-sm text-slate">{b.preferredTime}</p>
-                        {b.notes && <p className="mt-1 text-sm text-slate italic">“{b.notes}”</p>}
+                        {b.service && (
+                          <span className="rounded-full bg-ocean-50 px-2 py-0.5 text-xs font-bold text-ocean-700 first-letter:uppercase">{b.service}</span>
+                        )}
+                        <p className="mt-1 text-sm text-ink-700">{b.preferredTime ?? 'No time given'}</p>
+                        {b.notes && <p className="mt-1 text-sm text-ink-500 italic">“{b.notes}”</p>}
                       </td>
-                      <td className="px-5 py-4 text-sm text-slate">
+                      <td className="px-5 py-4 text-sm text-ink-500">
                         {dateTime(b.createdAt)}
                         <br />
                         Ref {shortRef(b.id)}
                         {b.conversationId && (
                           <>
                             {' · '}
-                            <Link href={`/admin/conversations/${b.conversationId}`} className="font-bold text-brand hover:underline">
+                            <Link href={`/admin/conversations/${b.conversationId}`} className="font-bold">
                               Chat
                             </Link>
                           </>
@@ -116,20 +112,31 @@ function BookingsTable() {
                         <BookingBadge status={b.status} />
                       </td>
                       <td className="px-5 py-4 text-right whitespace-nowrap">
-                        {b.status === 'pending' && (
+                        {b.status === 'pending' ? (
                           <div className="flex justify-end gap-2">
-                            <Button disabled={update.isPending} onClick={() => update.mutate({ id: b.id, status: 'confirmed' })}>
+                            <Button size="sm" disabled={update.isPending} onClick={() => update.mutate({ id: b.id, status: 'confirmed' })}>
+                              <CheckIcon size={15} strokeWidth={2.6} />
                               Confirm
                             </Button>
-                            <Button variant="danger" disabled={update.isPending} onClick={() => update.mutate({ id: b.id, status: 'cancelled' })}>
-                              Cancel
-                            </Button>
+                            <button
+                              type="button"
+                              aria-label={`Cancel request from ${b.patientName}`}
+                              disabled={update.isPending}
+                              onClick={() => update.mutate({ id: b.id, status: 'cancelled' })}
+                              className="flex size-10 items-center justify-center rounded-full border-[1.5px] border-line-strong bg-white text-ink-700 hover:border-danger hover:text-danger-ink"
+                            >
+                              <CloseIcon size={16} strokeWidth={2.4} />
+                            </button>
                           </div>
-                        )}
-                        {b.status !== 'pending' && (
-                          <Button variant="ghost" disabled={update.isPending} onClick={() => update.mutate({ id: b.id, status: 'pending' })}>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={update.isPending}
+                            onClick={() => update.mutate({ id: b.id, status: 'pending' })}
+                            className="h-10 px-1 text-sm font-bold text-ocean-600 hover:text-ocean-700"
+                          >
                             Move back to “to confirm”
-                          </Button>
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -141,7 +148,7 @@ function BookingsTable() {
           </>
         ) : (
           <EmptyState title={status === 'pending' ? 'No requests to confirm' : 'No appointment requests'}>
-            When a visitor asks the assistant for an appointment, the request lands here for you to call and confirm.
+            When a visitor asks Sunny for an appointment, the request lands here for you to call and confirm.
           </EmptyState>
         )}
       </Panel>
@@ -154,7 +161,7 @@ export default function BookingsPage() {
     <>
       <PageHeader
         title="Appointment requests"
-        description="Requests the assistant collected. Call the patient to agree a time, then mark the request as confirmed."
+        description="Requests Sunny collected. Call the patient to agree a time, then mark the request as confirmed."
       />
       <Suspense>
         <BookingsTable />

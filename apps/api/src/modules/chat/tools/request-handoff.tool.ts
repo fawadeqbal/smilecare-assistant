@@ -36,7 +36,7 @@ export class RequestHandoffTool extends ChatTool<typeof schema> {
       return { content: 'Already handed off; the team has been notified. Reassure the visitor someone will reply soon.' };
     }
 
-    await this.conversations.setStatus(ctx.conversationId, 'handed_off');
+    await this.conversations.markHandedOff(ctx.conversationId, input.reason);
     this.events.emit(DomainEvents.ConversationHandedOff, {
       businessId: ctx.business.id,
       conversationId: ctx.conversationId,

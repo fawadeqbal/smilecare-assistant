@@ -12,3 +12,4 @@ coverage/
 apps/web/public/widget.js
 next-env.d.ts
 .models/
+dump.rdb

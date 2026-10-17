@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { fieldClass } from '@/components/admin/ui';
+import { ArcDecoration, SmileMark, Wordmark } from '@/components/brand';
 
 function LoginForm() {
   const router = useRouter();
@@ -42,36 +44,36 @@ function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="mt-8 space-y-5">
       <label className="block">
-        <span className="text-sm font-bold">Email</span>
+        <span className="text-sm font-semibold">Email</span>
         <input
           name="email"
           type="email"
           required
           autoComplete="username"
           defaultValue="admin@smilecare.dev"
-          className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none focus:border-brand"
+          className={fieldClass}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-bold">Password</span>
+        <span className="text-sm font-semibold">Password</span>
         <input
           name="password"
           type="password"
           required
           minLength={8}
           autoComplete="current-password"
-          className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none focus:border-brand"
+          className={fieldClass}
         />
       </label>
       {error && (
-        <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-danger">
+        <p role="alert" className="rounded-2xl bg-danger-bg px-4 py-3 text-sm text-danger-ink">
           {error}
         </p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-xl bg-pine py-3 font-bold text-white transition-colors hover:bg-brand disabled:opacity-60"
+        className="h-[52px] w-full rounded-full bg-ocean-600 font-bold text-white shadow-[0_8px_20px_-6px_rgba(10,102,240,0.55)] transition-colors hover:bg-ocean-700 disabled:opacity-60"
       >
         {pending ? 'Signing in…' : 'Sign in'}
       </button>
@@ -81,13 +83,15 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="grid min-h-dvh place-items-center bg-mint px-5">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="font-display text-2xl font-bold tracking-tight">
-          SmileCare<span className="text-brand">.</span>
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-ocean-50 px-5 py-10">
+      <ArcDecoration className="-top-40 -right-40 size-[620px]" stroke="#DCEAFF" width={26} />
+      <div className="relative w-full max-w-[420px] rounded-[28px] bg-white p-[clamp(24px,5vw,40px)] shadow-overlay">
+        <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
+          <SmileMark size={36} />
+          <Wordmark className="text-[22px]" />
         </Link>
-        <h1 className="mt-8 font-display text-3xl font-bold tracking-tight">Sign in to the staff dashboard</h1>
-        <p className="mt-2 text-slate">Review conversations, confirm appointment requests and manage what the assistant knows.</p>
+        <h1 className="mt-7 font-display text-[32px] leading-[1.1] font-extrabold tracking-[-0.03em]">Sign in to the staff dashboard</h1>
+        <p className="mt-2 text-ink-700">Review conversations, confirm appointment requests and manage what Sunny knows.</p>
         <Suspense>
           <LoginForm />
         </Suspense>

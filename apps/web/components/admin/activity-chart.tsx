@@ -1,54 +1,100 @@
 'use client';
 
-import type { OverviewStats } from '@smilecare/shared';
+import type { DailyActivity } from '@smilecare/shared';
+import { useState } from 'react';
 
-/** 14-day grouped bar chart of conversations and appointment requests. Plain SVG, no chart library. */
-export function ActivityChart({ daily }: { daily: OverviewStats['daily'] }) {
-  const max = Math.max(1, ...daily.map((d) => Math.max(d.conversations, d.bookings)));
-  const width = 700;
-  const height = 180;
-  const pad = { top: 10, bottom: 26, left: 28, right: 4 };
-  const slot = (width - pad.left - pad.right) / daily.length;
-  const barW = Math.min(14, slot / 3);
-  const y = (v: number) => pad.top + (height - pad.top - pad.bottom) * (1 - v / max);
-  const ticks = Array.from(new Set([0, Math.ceil(max / 2), max]));
+const weekday = new Intl.DateTimeFormat('en', { weekday: 'short' });
+const dayMonth = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
+const parse = (date: string) => new Date(`${date}T12:00:00`);
+
+/**
+ * Grouped bars (conversations in ocean, appointment requests in coral) with a tooltip
+ * on hover or keyboard focus. Plain markup, no chart library.
+ */
+export function ActivityChart({ daily }: { daily: DailyActivity[] }) {
+  const [active, setActive] = useState<number | null>(null);
+  const range = daily.length;
+  const peak = Math.max(...daily.map((d) => Math.max(d.conversations, d.bookings)), 1);
+  const top = Math.max(4, Math.ceil(peak / 4) * 4);
+  const every = range <= 7 ? 1 : range <= 14 ? 2 : 5;
+  const height = (n: number) => (n === 0 ? '2px' : `${(n / top) * 100}%`);
 
   return (
-    <figure>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full" role="img" aria-label="Conversations and appointment requests per day, last 14 days">
-        {ticks.map((t) => (
-          <g key={t}>
-            <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} stroke="var(--color-line)" strokeDasharray={t ? '3 4' : undefined} />
-            <text x={pad.left - 8} y={y(t) + 4} textAnchor="end" fontSize="11" fill="var(--color-slate)">
-              {t}
-            </text>
-          </g>
-        ))}
-        {daily.map((d, i) => {
-          const cx = pad.left + slot * i + slot / 2;
-          const label = new Date(`${d.date}T00:00:00`).toLocaleDateString('en', { day: 'numeric', month: 'short' });
-          return (
-            <g key={d.date}>
-              <title>{`${label}: ${d.conversations} conversations, ${d.bookings} appointment requests`}</title>
-              <rect x={cx - barW - 1} y={y(d.conversations)} width={barW} height={y(0) - y(d.conversations)} rx="3" fill="var(--color-brand)" />
-              <rect x={cx + 1} y={y(d.bookings)} width={barW} height={y(0) - y(d.bookings)} rx="3" fill="var(--color-citrus)" />
-              {(i % 2 === 0 || i === daily.length - 1) && (
-                <text x={cx} y={height - 8} textAnchor="middle" fontSize="11" fill="var(--color-slate)">
-                  {label}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <figcaption className="mt-2 flex gap-5 text-sm text-slate">
-        <span className="flex items-center gap-2">
-          <i className="inline-block size-3 rounded-sm bg-brand" /> Conversations
-        </span>
-        <span className="flex items-center gap-2">
-          <i className="inline-block size-3 rounded-sm bg-citrus" /> Appointment requests
-        </span>
-      </figcaption>
-    </figure>
+    <div className="flex gap-2.5">
+      <div aria-hidden="true" className="flex h-60 w-6 -translate-y-[7px] flex-col justify-between text-right text-xs text-ink-500 tabular-nums">
+        <span>{top}</span>
+        <span>{top / 2}</span>
+        <span>0</span>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div
+          className="relative grid h-60 items-stretch border-b border-line-strong bg-[linear-gradient(#EEF2F7_1px,transparent_1px)] bg-[length:100%_120px]"
+          style={{ gridTemplateColumns: `repeat(${range}, minmax(0, 1fr))` }}
+          onMouseLeave={() => setActive(null)}
+        >
+          {daily.map((d, i) => {
+            const date = parse(d.date);
+            const label = `${dayMonth.format(date)}: ${d.conversations} conversations, ${d.bookings} appointment requests`;
+            const isActive = active === i;
+            return (
+              <button
+                key={d.date}
+                type="button"
+                aria-label={label}
+                onMouseEnter={() => setActive(i)}
+                onFocus={() => setActive(i)}
+                onBlur={() => setActive(null)}
+                className={`relative flex cursor-default items-end justify-center gap-0.5 rounded-t-[10px] px-0.5 focus-visible:outline-offset-[-3px] ${
+                  isActive ? 'bg-ocean-50' : ''
+                }`}
+              >
+                <span className="w-[40%] max-w-4 rounded-t bg-ocean-600" style={{ height: height(d.conversations) }} />
+                <span className="w-[40%] max-w-4 rounded-t bg-coral-400" style={{ height: height(d.bookings) }} />
+                {isActive && (
+                  <span
+                    className={`pointer-events-none absolute top-1.5 z-10 flex w-[168px] flex-col gap-1 rounded-[14px] bg-white px-3 py-2.5 text-left text-[13px] text-ink shadow-overlay ${
+                      i < range / 2 ? 'left-1' : 'right-1'
+                    }`}
+                  >
+                    <strong>
+                      {weekday.format(date)}, {dayMonth.format(date)}
+                    </strong>
+                    <span className="flex items-center gap-2">
+                      <span className="size-2.5 rounded-[3px] bg-ocean-600" />
+                      <span className="flex-1">Conversations</span>
+                      <strong className="tabular-nums">{d.conversations}</strong>
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="size-2.5 rounded-[3px] bg-coral-400" />
+                      <span className="flex-1">Requests</span>
+                      <strong className="tabular-nums">{d.bookings}</strong>
+                    </span>
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div aria-hidden="true" className="grid text-center text-xs whitespace-nowrap text-ink-500" style={{ gridTemplateColumns: `repeat(${range}, minmax(0, 1fr))` }}>
+          {daily.map((d, i) => {
+            const date = parse(d.date);
+            const show = (range - 1 - i) % every === 0;
+            return <span key={d.date}>{show ? (range <= 7 ? `${weekday.format(date)} ${date.getDate()}` : dayMonth.format(date)) : ''}</span>;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Tiny trend line for KPI cards. */
+export function Sparkline({ values }: { values: number[] }) {
+  const max = Math.max(...values, 1);
+  const pts = values.map((v, i) => `${((i * 100) / Math.max(values.length - 1, 1)).toFixed(1)},${(31 - (v / max) * 27).toFixed(1)}`);
+  return (
+    <svg width="96" height="34" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+      <polygon points={`0,34 ${pts.join(' ')} 100,34`} fill="var(--color-ocean-50)" />
+      <polyline points={pts.join(' ')} fill="none" stroke="var(--color-ocean-600)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }

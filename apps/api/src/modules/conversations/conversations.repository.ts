@@ -26,6 +26,13 @@ export class ConversationsRepository {
     await this.db.update(conversations).set({ status }).where(eq(conversations.id, id));
   }
 
+  async markHandedOff(id: string, reason: string): Promise<void> {
+    await this.db
+      .update(conversations)
+      .set({ status: 'handed_off', handoffReason: reason, handedOffAt: new Date() })
+      .where(eq(conversations.id, id));
+  }
+
   async touch(id: string): Promise<void> {
     await this.db.update(conversations).set({ updatedAt: new Date() }).where(eq(conversations.id, id));
   }
@@ -74,6 +81,7 @@ export class ConversationsRepository {
     // renders column references inside a select list without their table name.
     const messageCount = sql<number>`(select count(*)::int from messages m where m.conversation_id = "conversations"."id")`;
     const lastMessage = sql<string | null>`(select m.content from messages m where m.conversation_id = "conversations"."id" order by m.created_at desc limit 1)`;
+    const lastVisitorMessage = sql<string | null>`(select m.content from messages m where m.conversation_id = "conversations"."id" and m.role = 'user' order by m.created_at desc limit 1)`;
 
     const [items, [{ total }]] = await Promise.all([
       this.db
@@ -83,8 +91,11 @@ export class ConversationsRepository {
           status: conversations.status,
           createdAt: conversations.createdAt,
           updatedAt: conversations.updatedAt,
+          handoffReason: conversations.handoffReason,
+          handedOffAt: conversations.handedOffAt,
           messageCount,
           lastMessage,
+          lastVisitorMessage,
         })
         .from(conversations)
         .where(where)

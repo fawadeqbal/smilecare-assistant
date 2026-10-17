@@ -3,6 +3,19 @@
 import { useEffect, useState } from 'react';
 import { clinic } from '@/lib/clinic';
 
+interface ClinicStatus {
+  isOpen: boolean;
+  /** e.g. "Open today until 7 pm" or "Closed now · opens Monday at 9 am" */
+  label: string;
+}
+
+const toMinutes = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+const toHuman = (t: string) => {
+  const h = Number(t.slice(0, 2));
+  const m = t.slice(3);
+  return `${h % 12 || 12}${m === '00' ? '' : `:${m}`} ${h < 12 ? 'am' : 'pm'}`;
+};
+
 function clinicNow(): { dayIndex: number; minutes: number } {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: clinic.timezone,
@@ -12,62 +25,56 @@ function clinicNow(): { dayIndex: number; minutes: number } {
     hourCycle: 'h23',
   }).formatToParts(new Date());
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '0';
-  const dayIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
-  return { dayIndex, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
+  return {
+    dayIndex: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday')),
+    minutes: Number(get('hour')) * 60 + Number(get('minute')),
+  };
 }
 
-const toMinutes = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
-const to12h = (t: string) => {
-  const h = Number(t.slice(0, 2));
-  const m = t.slice(3);
-  return `${h % 12 || 12}${m === '00' ? '' : `:${m}`} ${h < 12 ? 'AM' : 'PM'}`;
-};
-
-function status(dayIndex: number, minutes: number): string {
+function statusAt(dayIndex: number, minutes: number): ClinicStatus {
   const today = clinic.hours[dayIndex];
   if (today.open && today.close && minutes >= toMinutes(today.open) && minutes < toMinutes(today.close)) {
-    return `Open now, until ${to12h(today.close)}`;
+    return { isOpen: true, label: `Open today until ${toHuman(today.close)}` };
   }
   for (let i = 0; i < 7; i++) {
-    const idx = (dayIndex + i) % 7;
-    const d = clinic.hours[idx];
-    if (!d.open) continue;
-    if (i === 0 && minutes >= toMinutes(d.open)) continue;
-    const when = i === 0 ? 'today' : i === 1 ? 'tomorrow' : d.day;
-    return `Closed now. Opens ${when} at ${to12h(d.open)}`;
+    const day = clinic.hours[(dayIndex + i) % 7];
+    if (!day.open) continue;
+    if (i === 0 && minutes >= toMinutes(day.open)) continue;
+    const when = i === 0 ? 'today' : i === 1 ? 'tomorrow' : day.day;
+    return { isOpen: false, label: `Closed now · opens ${when} at ${toHuman(day.open)}` };
   }
-  return 'Closed';
+  return { isOpen: false, label: 'Closed' };
 }
 
-/** Weekly hours with today highlighted and a live open/closed line, computed in the clinic's time zone. */
-export function OpeningHours() {
-  const [now, setNow] = useState<{ dayIndex: number; minutes: number } | null>(null);
+/** Live open/closed status in the clinic's own time zone. Null until mounted, to avoid hydration mismatches. */
+export function useClinicStatus(): ClinicStatus | null {
+  const [status, setStatus] = useState<ClinicStatus | null>(null);
   useEffect(() => {
-    setNow(clinicNow());
-    const id = setInterval(() => setNow(clinicNow()), 60_000);
+    const tick = () => {
+      const { dayIndex, minutes } = clinicNow();
+      setStatus(statusAt(dayIndex, minutes));
+    };
+    tick();
+    const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
   }, []);
+  return status;
+}
 
-  const isOpen = now ? status(now.dayIndex, now.minutes).startsWith('Open') : false;
-
+export function OpenStatusPill({ suffix, short = false }: { suffix?: string; short?: boolean }) {
+  const status = useClinicStatus();
+  const open = status?.isOpen ?? true;
+  const text = status ? (short ? (status.isOpen ? 'Open now' : 'Closed now') : status.label) : 'Checking today’s hours';
   return (
-    <div>
-      <p className="flex items-center gap-2 font-bold" aria-live="polite">
-        <span className={`inline-block size-2.5 rounded-full ${now ? (isOpen ? 'bg-emerald-500' : 'bg-citrus') : 'bg-line'}`} />
-        {now ? status(now.dayIndex, now.minutes) : 'Checking today’s hours…'}
-      </p>
-      <dl className="mt-4 grid grid-cols-[1fr_auto] gap-y-1.5 text-[15px]">
-        {[1, 2, 3, 4, 5, 6, 0].map((i) => {
-          const d = clinic.hours[i];
-          const today = now?.dayIndex === i;
-          return (
-            <div key={d.day} className={`contents ${today ? 'font-bold' : ''}`}>
-              <dt className={today ? 'text-pine' : 'text-slate'}>{d.day}</dt>
-              <dd className="text-right tabular-nums">{d.open && d.close ? `${to12h(d.open)} – ${to12h(d.close)}` : 'Closed'}</dd>
-            </div>
-          );
-        })}
-      </dl>
-    </div>
+    <span
+      aria-live="polite"
+      className={`inline-flex items-center gap-2 self-start rounded-full px-3.5 py-1.5 text-sm font-bold ${
+        open ? 'bg-success-bg text-success-ink' : 'bg-warning-bg text-warning-ink'
+      }`}
+    >
+      <span className={`size-2 rounded-full ${open ? 'bg-success' : 'bg-coral-600'}`} />
+      {text}
+      {suffix && <span className="font-semibold opacity-80">· {suffix}</span>}
+    </span>
   );
 }

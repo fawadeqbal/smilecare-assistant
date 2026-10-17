@@ -1,25 +1,53 @@
 'use client';
 
-import type { AuthUser } from '@smilecare/shared';
+import type { AuthUser, BusinessSettings, OverviewStats } from '@smilecare/shared';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { ArcDecoration, SmileMark, Wordmark } from '@/components/brand';
+import { BookIcon, CalendarIcon, ChatIcon, ExternalIcon, GridIcon, MenuIcon, SignOutIcon, SlidersIcon } from '@/components/icons';
 import { api } from '@/lib/api';
+import { installSnippet } from '@/lib/snippet';
 
-const nav = [
-  { href: '/admin', label: 'Overview' },
-  { href: '/admin/conversations', label: 'Conversations' },
-  { href: '/admin/bookings', label: 'Appointment requests' },
-  { href: '/admin/knowledge', label: 'Knowledge' },
-  { href: '/admin/settings', label: 'Assistant settings' },
-];
+function useCounts() {
+  return useQuery({
+    queryKey: ['overview', 7],
+    queryFn: () => api<OverviewStats>('/analytics/overview?days=7'),
+    refetchInterval: 30_000,
+  });
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const me = useQuery({ queryKey: ['me'], queryFn: () => api<AuthUser>('/auth/me') });
+  const settings = useQuery({ queryKey: ['settings'], queryFn: () => api<BusinessSettings>('/settings') });
+  const counts = useCounts();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const nav = [
+    { href: '/admin', label: 'Overview', icon: GridIcon },
+    {
+      href: '/admin/conversations',
+      label: 'Conversations',
+      icon: ChatIcon,
+      count: counts.data?.waiting.count,
+      countClass: 'bg-handoff-bg text-handoff-ink',
+      countLabel: 'waiting for a person',
+    },
+    {
+      href: '/admin/bookings',
+      label: 'Appointment requests',
+      icon: CalendarIcon,
+      count: counts.data?.bookings.pending,
+      countClass: 'bg-warning-bg text-warning-ink',
+      countLabel: 'to confirm',
+    },
+    { href: '/admin/knowledge', label: 'Knowledge', icon: BookIcon },
+    { href: '/admin/settings', label: 'Assistant settings', icon: SlidersIcon },
+  ];
 
   async function signOut() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -27,55 +55,122 @@ function Shell({ children }: { children: React.ReactNode }) {
     router.refresh();
   }
 
+  async function copyInstall() {
+    if (!settings.data) return;
+    await navigator.clipboard.writeText(installSnippet(settings.data.widgetKey));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   const isActive = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href));
+  const initials = (me.data?.businessName ?? 'SC')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[250px_1fr]">
-      <aside className="border-b border-line bg-white lg:sticky lg:top-0 lg:h-dvh lg:border-r lg:border-b-0">
-        <div className="flex items-center justify-between px-5 py-5">
-          <Link href="/admin" className="font-display text-xl font-bold tracking-tight">
-            SmileCare<span className="text-brand">.</span>
+    <div className="min-h-dvh bg-cloud lg:grid lg:grid-cols-[280px_1fr]">
+      <aside className="border-b border-line bg-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:border-r lg:border-b-0">
+        <div className="flex items-center justify-between px-[22px] py-[22px]">
+          <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
+            <SmileMark size={34} />
+            <Wordmark className="text-[21px]" />
           </Link>
           <button
-            className="rounded-lg px-3 py-1.5 text-sm font-bold ring-1 ring-line lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-line lg:hidden"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-controls="admin-nav"
+            aria-label="Menu"
           >
-            Menu
+            <MenuIcon />
           </button>
         </div>
-        <div id="admin-nav" className={`${menuOpen ? 'block' : 'hidden'} lg:flex lg:h-[calc(100dvh-72px)] lg:flex-col`}>
-          <nav aria-label="Dashboard" className="space-y-0.5 px-3">
-            {nav.map((item) => (
+
+        <div id="admin-nav" className={`${menuOpen ? 'flex' : 'hidden'} flex-1 flex-col gap-[22px] px-3.5 pb-5 lg:flex`}>
+          <div className="flex items-center gap-2.5 rounded-[14px] bg-success-bg px-3 py-2.5">
+            <span className="size-2.5 flex-none rounded-full bg-success shadow-[0_0_0_4px_rgba(14,159,110,0.18)]" />
+            <div className="flex flex-col leading-[1.3]">
+              <strong className="text-sm text-success-ink">{settings.data?.botName ?? 'Sunny'} is live</strong>
+              <span className="text-xs text-[#2F5E4E]">Answering on your website</span>
+            </div>
+          </div>
+
+          <nav aria-label="Dashboard" className="flex flex-col gap-0.5">
+            <span className="px-3 pb-1.5 text-xs font-bold tracking-[0.1em] text-ink-400 uppercase">Workspace</span>
+            {nav.map(({ href, label, icon: Icon, count, countClass, countLabel }) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={href}
+                href={href}
                 onClick={() => setMenuOpen(false)}
-                aria-current={isActive(item.href) ? 'page' : undefined}
-                className={`block rounded-xl px-3 py-2.5 text-[15px] transition-colors ${
-                  isActive(item.href) ? 'bg-mint font-bold text-pine' : 'text-slate hover:bg-porcelain hover:text-pine'
+                aria-current={isActive(href) ? 'page' : undefined}
+                className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] no-underline transition-colors ${
+                  isActive(href) ? 'bg-ocean-50 font-bold text-ocean-700' : 'font-semibold text-ink-700 hover:bg-cloud'
                 }`}
               >
-                {item.label}
+                <Icon size={20} />
+                <span className="flex-1">{label}</span>
+                {!!count && (
+                  <span className={`rounded-full px-2 text-xs font-bold ${countClass}`}>
+                    {count}
+                    <span className="sr-only"> {countLabel}</span>
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
-          <div className="mt-6 border-t border-line px-5 py-5 text-sm lg:mt-auto">
-            <p className="font-bold">{me.data?.businessName ?? ' '}</p>
-            <p className="truncate text-slate">{me.data?.email ?? ' '}</p>
-            <div className="mt-3 flex gap-4">
-              <Link href="/" target="_blank" className="font-bold text-brand hover:underline">
-                View website
-              </Link>
-              <button onClick={signOut} className="font-bold text-slate hover:text-pine">
-                Sign out
-              </button>
+
+          <div className="relative flex flex-col gap-2.5 overflow-hidden rounded-[18px] bg-ink p-[18px] text-white">
+            <ArcDecoration className="-right-8 -bottom-12 size-[150px]" stroke="#1C3352" />
+            <strong className="relative font-display text-[17px] leading-[1.25]">Put {settings.data?.botName ?? 'Sunny'} on another page</strong>
+            <span className="relative text-[13px] text-[#B7C4D6]">One script tag. Works on any website builder.</span>
+            <button
+              type="button"
+              onClick={copyInstall}
+              disabled={!settings.data}
+              className="relative h-9 self-start rounded-full bg-white px-3.5 text-[13px] font-bold text-ink disabled:opacity-70"
+            >
+              {copied ? 'Copied' : 'Copy install code'}
+            </button>
+          </div>
+
+          <div className="mt-auto flex items-center gap-2.5 border-t border-line px-2 pt-3">
+            <span className="flex size-[38px] flex-none items-center justify-center rounded-full bg-coral-100 text-sm font-bold text-handoff-ink">
+              {initials}
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+              <strong className="truncate text-sm">{me.data?.businessName ?? ' '}</strong>
+              <span className="truncate text-[13px] text-ink-500">{me.data?.email ?? ' '}</span>
             </div>
+            <button
+              type="button"
+              onClick={signOut}
+              aria-label="Sign out"
+              title="Sign out"
+              className="flex size-10 flex-none items-center justify-center rounded-xl text-ink-500 hover:bg-cloud hover:text-ink"
+            >
+              <SignOutIcon size={18} />
+            </button>
           </div>
         </div>
       </aside>
-      <main className="min-w-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-10">{children}</main>
+
+      <main className="min-w-0 px-[clamp(16px,3.5vw,44px)] pt-[18px] pb-12">
+        <div className="mb-5 flex justify-end">
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-line bg-white px-[18px] font-bold text-ink no-underline hover:border-ocean-300"
+          >
+            <ChatIcon size={18} className="text-ocean-600" />
+            Preview {settings.data?.botName ?? 'Sunny'}
+            <ExternalIcon size={14} className="text-ink-400" />
+          </Link>
+        </div>
+        {children}
+      </main>
     </div>
   );
 }

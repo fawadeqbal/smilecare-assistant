@@ -194,7 +194,27 @@ describe('Chat (e2e)', () => {
     expect(withMessages[0].lastMessage).toEqual(expect.any(String));
 
     const overview = await request(app.getHttpServer()).get('/v1/analytics/overview').set('Authorization', `Bearer ${token}`).expect(200);
-    expect(overview.body.conversations.total).toBeGreaterThanOrEqual(3);
+    expect(overview.body.week.conversations).toBeGreaterThanOrEqual(3);
     expect(overview.body.daily).toHaveLength(14);
+    expect(overview.body.sparks.conversations).toHaveLength(14);
+    expect(overview.body.waiting.count).toBe(1);
+    expect(overview.body.waiting.longestSince).toEqual(expect.any(String));
+    expect(overview.body.topTopics[0]).toMatchObject({ label: 'Prices' });
+
+    const month = await request(app.getHttpServer())
+      .get('/v1/analytics/overview?days=30')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(month.body.daily).toHaveLength(30);
+    await request(app.getHttpServer()).get('/v1/analytics/overview?days=9').set('Authorization', `Bearer ${token}`).expect(400);
+
+    const waiting = await request(app.getHttpServer())
+      .get('/v1/conversations?status=handed_off')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(waiting.body.items[0]).toMatchObject({
+      handoffReason: 'asked for a human',
+      lastVisitorMessage: 'Can I talk to a human please?',
+    });
   });
 });

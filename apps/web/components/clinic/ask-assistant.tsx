@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-function useWidgetReady() {
+export function useWidgetReady() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (window.SmileCareWidget) return setReady(true);
@@ -19,10 +19,8 @@ function useWidgetReady() {
   return ready;
 }
 
-const examples = ['How much is whitening?', 'Do you take Delta Dental?', 'Is there parking?'];
-
-/** Hero search box that hands the visitor's question straight to the chat widget. */
-export function AskAssistant() {
+/** Pill search box that hands the visitor's question straight to Sunny. */
+export function AskSunnyBox({ id, examples }: { id: string; examples?: string[] }) {
   const ready = useWidgetReady();
   const [question, setQuestion] = useState('');
 
@@ -34,51 +32,53 @@ export function AskAssistant() {
   };
 
   return (
-    <div className="max-w-xl">
+    <div className="flex max-w-[520px] flex-col gap-3">
       <form
-        className="flex items-center gap-2 rounded-2xl bg-white p-2 pl-5 shadow-[0_1px_0_var(--color-line),0_18px_40px_-24px_rgba(14,59,51,.45)] ring-1 ring-line"
+        className="flex items-center gap-2 rounded-full border-[1.5px] border-line bg-white py-1.5 pr-1.5 pl-5 shadow-[0_12px_28px_-10px_rgba(10,102,240,0.3)] focus-within:border-ocean-300"
         onSubmit={(e) => {
           e.preventDefault();
           ask(question);
         }}
       >
-        <label htmlFor="ask" className="sr-only">
-          Ask our assistant a question
+        <label htmlFor={id} className="sr-only">
+          Ask Sunny a question
         </label>
         <input
-          id="ask"
+          id={id}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask about prices, hours, insurance…"
-          className="min-w-0 flex-1 bg-transparent py-2 text-[17px] outline-none placeholder:text-slate/70"
           maxLength={300}
+          className="h-[46px] min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-500"
         />
         <button
           type="submit"
           disabled={!ready || !question.trim()}
-          className="rounded-xl bg-brand px-5 py-3 font-bold text-white transition-colors hover:bg-brand-dark disabled:opacity-50"
+          className="h-[46px] rounded-full bg-ocean-600 px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ocean-700 disabled:opacity-60"
         >
           Ask Sunny
         </button>
       </form>
-      <div className="mt-4 flex flex-wrap gap-2 text-[15px]">
-        <span className="py-1 text-slate">Try:</span>
-        {examples.map((q) => (
-          <button
-            key={q}
-            type="button"
-            disabled={!ready}
-            onClick={() => ask(q)}
-            className="rounded-full px-3 py-1 text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand disabled:opacity-50"
-          >
-            {q}
-          </button>
-        ))}
-      </div>
+      {examples && (
+        <div className="flex flex-wrap gap-2">
+          {examples.map((q) => (
+            <button
+              key={q}
+              type="button"
+              disabled={!ready}
+              onClick={() => ask(q)}
+              className="h-11 rounded-full border-[1.5px] border-ocean-200 bg-white px-4 text-[15px] font-semibold text-ocean-700 transition-colors hover:bg-ocean-50 disabled:opacity-60"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
+/** Opens Sunny with an appointment request already sent. */
 export function BookButton({ className, children }: { className?: string; children: React.ReactNode }) {
   const ready = useWidgetReady();
   return (
@@ -88,6 +88,26 @@ export function BookButton({ className, children }: { className?: string; childr
       onClick={() => void window.SmileCareWidget?.ask("I'd like to request an appointment")}
       className={className}
     >
+      {children}
+    </button>
+  );
+}
+
+/** Opens Sunny without sending anything. */
+export function OpenSunnyButton({ className, children }: { className?: string; children: React.ReactNode }) {
+  const ready = useWidgetReady();
+  return (
+    <button type="button" disabled={!ready} onClick={() => void window.SmileCareWidget?.open()} className={className}>
+      {children}
+    </button>
+  );
+}
+
+/** Sends a preset question to Sunny (used for the example chat's quick replies). */
+export function AskChip({ question, className, children }: { question: string; className?: string; children: React.ReactNode }) {
+  const ready = useWidgetReady();
+  return (
+    <button type="button" disabled={!ready} onClick={() => void window.SmileCareWidget?.ask(question)} className={className}>
       {children}
     </button>
   );

@@ -1,23 +1,57 @@
 @import "tailwindcss";
 
+/*
+ * SmileCare design system 2.0 — "Bright & friendly".
+ * Ocean for trust and every primary action, coral for moments of delight,
+ * soft rounded shapes and plenty of white space.
+ */
 @theme {
-  --color-pine: #0e3b33;
-  --color-brand: #0e7c66;
-  --color-brand-dark: #0a5e4d;
-  --color-mint: #e3f1ec;
-  --color-porcelain: #fbfcfb;
-  --color-citrus: #f2c14e;
-  --color-slate: #5b6b66;
-  --color-line: #dce5e1;
-  --color-danger: #b42318;
+  --color-ocean-50: #eef5ff;
+  --color-ocean-100: #dceaff;
+  --color-ocean-200: #b5d2ff;
+  --color-ocean-300: #8db8ff;
+  --color-ocean-500: #2f7bff;
+  --color-ocean-600: #0a66f0;
+  --color-ocean-700: #0050c8;
 
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-coral-50: #fff3ee;
+  --color-coral-100: #ffe2d6;
+  --color-coral-200: #ffc2ad;
+  --color-coral-400: #ff8a65;
+  --color-coral-600: #e5603b;
+  --color-coral-700: #b8431f;
+
+  --color-ink: #0b1b2e;
+  --color-ink-700: #3a4b63;
+  --color-ink-500: #51627a;
+  --color-ink-400: #64748b;
+  --color-cloud: #f5f8fc;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  --color-success: #0e9f6e;
+  --color-success-bg: #e6f7f0;
+  --color-success-ink: #0a7a55;
+  --color-warning-bg: #fff4db;
+  --color-warning-ink: #92400e;
+  --color-handoff-bg: #ffe2d6;
+  --color-handoff-ink: #9a3412;
+  --color-danger: #d92d20;
+  --color-danger-bg: #feeceb;
+  --color-danger-ink: #b42318;
+
+  --font-display: var(--font-gabarito), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-rest: 0 1px 2px rgba(11, 27, 46, 0.06), 0 1px 1px rgba(11, 27, 46, 0.04);
+  --shadow-raised: 0 2px 4px rgba(11, 27, 46, 0.04), 0 12px 28px -6px rgba(10, 102, 240, 0.18);
+  --shadow-overlay: 0 4px 8px rgba(11, 27, 46, 0.05), 0 32px 64px -16px rgba(11, 27, 46, 0.28);
+  --shadow-glow: 0 12px 28px -8px rgba(10, 102, 240, 0.6);
 }
 
 html {
-  color: var(--color-pine);
-  background: var(--color-porcelain);
+  color: var(--color-ink);
+  background: #ffffff;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -25,13 +59,13 @@ html {
 body {
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-brand) 55%, white);
-  outline-offset: 2px;
-  border-radius: 6px;
+  outline: 3px solid var(--color-ocean-300);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -41,21 +75,4 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Price list leaders: "Cleaning ........ $119" */
-.leader {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-.leader::after {
-  content: "";
-  order: 1;
-  flex: 1;
-  border-bottom: 2px dotted var(--color-line);
-  transform: translateY(-0.3em);
-}
-.leader > :last-child {
-  order: 2;
 }
