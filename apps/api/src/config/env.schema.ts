@@ -32,7 +32,7 @@ export const envSchema = z.object({
 
   // Auth
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
-  JWT_EXPIRES_IN_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 12),
+  JWT_EXPIRES_IN_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 8),
 
   // CORS: the admin dashboard origin(s). Widget endpoints accept any origin.
   ADMIN_CORS_ORIGINS: csv,
@@ -53,6 +53,8 @@ export const envSchema = z.object({
   // Retrieval. The minimum score depends on the embedding model: E5 models score
   // unrelated text around 0.75-0.80 and relevant text above ~0.82.
   RETRIEVAL_TOP_K: z.coerce.number().int().positive().default(5),
+  /** HNSW candidate list size. Higher = better recall when many tenants share the index. */
+  RETRIEVAL_EF_SEARCH: z.coerce.number().int().min(10).max(1000).default(100),
   RETRIEVAL_MIN_SCORE: z.coerce.number().min(0).max(1).default(0.78),
   CHUNK_SIZE_CHARS: z.coerce.number().int().positive().default(1800),
   CHUNK_OVERLAP_CHARS: z.coerce.number().int().nonnegative().default(300),
@@ -71,6 +73,9 @@ export const envSchema = z.object({
   RATE_LIMIT_TTL_SECONDS: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
   CHAT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
+
+  // Swagger UI at /docs (always on outside production)
+  API_DOCS_ENABLED: bool.default(false),
 
   // Widget bundle served at /widget.js
   WIDGET_BUNDLE_PATH: z.string().default('../widget/dist/widget.js'),

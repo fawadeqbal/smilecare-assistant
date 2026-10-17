@@ -21,7 +21,9 @@ class RedisShutdown implements OnApplicationShutdown {
       provide: REDIS,
       inject: [AppConfig],
       useFactory: (config: AppConfig) =>
-        new Redis(config.get('REDIS_URL'), { maxRetriesPerRequest: null, lazyConnect: false }),
+        // Fail fast: if Redis is down, rate limiting and health checks error out quickly
+        // instead of hanging every request. (BullMQ uses its own connections.)
+        new Redis(config.get('REDIS_URL'), { maxRetriesPerRequest: 2, connectTimeout: 5_000 }),
     },
     RedisShutdown,
   ],

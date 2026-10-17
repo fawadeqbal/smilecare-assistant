@@ -35,8 +35,13 @@ export class BookingsController {
   async export(@BusinessId() businessId: string, @Res() res: Response) {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="bookings-${new Date().toISOString().slice(0, 10)}.csv"`);
-    for await (const line of this.bookings.exportCsv(businessId)) res.write(line);
-    res.end();
+    try {
+      for await (const line of this.bookings.exportCsv(businessId)) res.write(line);
+      res.end();
+    } catch (err) {
+      // Headers are already sent, so the only honest signal left is to abort the download.
+      res.destroy(err as Error);
+    }
   }
 
   @Get(':id')

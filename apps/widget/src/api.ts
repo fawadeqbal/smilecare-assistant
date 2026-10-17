@@ -58,24 +58,35 @@ export class WidgetApi {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let finished = false;
 
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
+    try {
+      while (!finished) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true }).replace(/\r\n?/g, '\n');
 
-      let boundary: number;
-      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
-        const frame = buffer.slice(0, boundary);
-        buffer = buffer.slice(boundary + 2);
-        const data = frame
-          .split('\n')
-          .filter((line) => line.startsWith('data:'))
-          .map((line) => line.slice(5).trimStart())
-          .join('\n');
-        if (data) onEvent(JSON.parse(data) as ChatStreamEvent);
+        let boundary: number;
+        while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+          const frame = buffer.slice(0, boundary);
+          buffer = buffer.slice(boundary + 2);
+          const data = frame
+            .split('\n')
+            .filter((line) => line.startsWith('data:'))
+            .map((line) => line.slice(5).trimStart())
+            .join('\n');
+          if (!data) continue;
+          const event = JSON.parse(data) as ChatStreamEvent;
+          if (event.type === 'done' || event.type === 'error') finished = true;
+          onEvent(event);
+        }
       }
+    } finally {
+      reader.cancel().catch(() => undefined);
     }
+
+    // A stream that ends without `done` or `error` was cut off (server restart, proxy timeout).
+    if (!finished) throw new Error('The reply was interrupted. Please try again.');
   }
 
   private async json<T>(path: string, init: RequestInit = {}): Promise<T> {

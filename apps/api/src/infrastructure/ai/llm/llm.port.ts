@@ -28,6 +28,8 @@ export interface LlmChatRequest {
   system: string;
   messages: LlmMessage[];
   tools?: LlmToolDefinition[];
+  /** `none` keeps tools visible to the model but forbids calling them (forces a text answer). */
+  toolChoice?: 'auto' | 'none';
   maxTokens?: number;
   temperature?: number;
   /** Aborts the upstream request, e.g. when the visitor closes the widget. */

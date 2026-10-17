@@ -24,7 +24,12 @@ export class RetrievalService {
     if (!trimmed) return [];
 
     const [embedding] = await this.embeddings.embed([trimmed], 'query');
-    const hits = await this.repo.searchChunks(businessId, embedding, options.limit ?? this.config.get('RETRIEVAL_TOP_K'));
+    const hits = await this.repo.searchChunks(
+      businessId,
+      embedding,
+      options.limit ?? this.config.get('RETRIEVAL_TOP_K'),
+      this.config.get('RETRIEVAL_EF_SEARCH'),
+    );
     const minScore = options.minScore ?? this.config.get('RETRIEVAL_MIN_SCORE');
     return hits.filter((h) => h.score >= minScore);
   }

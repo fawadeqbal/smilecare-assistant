@@ -5,6 +5,8 @@
 **/.env.*
 !**/.env.example
 **/*.log
+**/*.tsbuildinfo
+**/.models
 **/coverage
 .git
 docs

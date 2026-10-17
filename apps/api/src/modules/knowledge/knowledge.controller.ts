@@ -15,14 +15,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import type { KnowledgeDocument, KnowledgeSearchHit, Paginated } from '@smilecare/shared';
-import { memoryStorage } from 'multer';
 import { BusinessId, Roles } from '@/common/decorators';
 import { PaginationQuery } from '@/common/http/pagination.dto';
 import { CreateTextDocumentDto, KnowledgeSearchDto, UploadDocumentDto } from './dto/knowledge.dto';
 import { KnowledgeService } from './knowledge.service';
 import { RetrievalService } from './retrieval.service';
-
-const MAX_UPLOAD_BYTES = Number(process.env.UPLOAD_MAX_BYTES ?? 10 * 1024 * 1024);
 
 @ApiTags('knowledge')
 @ApiBearerAuth()
@@ -59,7 +56,7 @@ export class KnowledgeController {
       required: ['file'],
     },
   })
-  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } }))
+  @UseInterceptors(FileInterceptor('file')) // storage and size limit come from MulterModule in knowledge.module.ts
   upload(
     @BusinessId() businessId: string,
     @UploadedFile() file: Express.Multer.File | undefined,

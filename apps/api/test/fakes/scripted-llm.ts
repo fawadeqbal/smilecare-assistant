@@ -24,6 +24,7 @@ export class ScriptedLlm implements LlmPort {
       .join(' ')
       .toLowerCase();
 
+    if (request.toolChoice === 'none') return this.say('Here is what I can tell you so far.', handlers);
     if (toolResult) return this.say(toolResult.isError ? 'Sorry, that did not work.' : 'All done! The team will call you to confirm.', handlers);
 
     if (userText.includes('book')) {

@@ -4,11 +4,11 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEmail,
-  IsHexColor,
   IsOptional,
   IsString,
   IsTimeZone,
   Length,
+  Matches,
   MaxLength,
   ValidateIf,
 } from 'class-validator';
@@ -23,7 +23,7 @@ export class UpdateSettingsDto implements UpdateBusinessSettingsRequest {
   @ApiPropertyOptional() @IsOptional() @IsString() @Length(2, 500)
   welcomeMessage?: string;
 
-  @ApiPropertyOptional({ example: '#0E7C66' }) @IsOptional() @IsHexColor()
+  @ApiPropertyOptional({ example: '#0E7C66' }) @IsOptional() @Matches(/^#[0-9a-f]{6}$/i, { message: 'brandColor must be a 6-digit hex color like #0E7C66' })
   brandColor?: string;
 
   @ApiPropertyOptional({ type: [String] })

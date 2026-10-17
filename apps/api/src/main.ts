@@ -48,6 +48,8 @@ export function configureApp(app: NestExpressApplication) {
       { path: 'health/live', method: RequestMethod.GET },
     ],
   });
+  // Text documents can be up to 500k characters, above Express's 100 KB default.
+  app.useBodyParser('json', { limit: '1mb' });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
   app.useGlobalFilters(new AllExceptionsFilter());
 
@@ -63,6 +65,7 @@ export function configureApp(app: NestExpressApplication) {
     res.type('application/javascript').sendFile(widgetPath);
   });
 
+  if (config.isProduction && !config.get('API_DOCS_ENABLED')) return;
   const swagger = new DocumentBuilder()
     .setTitle('SmileCare Assistant API')
     .setDescription('AI customer-support chatbot: RAG chat, knowledge base, bookings and admin endpoints.')

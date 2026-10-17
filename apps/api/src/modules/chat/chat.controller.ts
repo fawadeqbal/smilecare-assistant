@@ -30,7 +30,7 @@ class SendMessageDto implements SendMessageRequest {
   @ApiProperty() @Matches(VISITOR_ID)
   visitorId: string;
 
-  @ApiProperty({ example: 'How much is teeth whitening?' }) @IsString() @Length(1, 2000)
+  @ApiProperty({ example: 'How much is teeth whitening?' }) @IsString() @Length(1, 2000) @Matches(/\S/, { message: 'message must not be empty' })
   message: string;
 }
 

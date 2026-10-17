@@ -43,6 +43,7 @@ export class AnthropicLlmAdapter implements LlmPort {
                 description: t.description,
                 input_schema: t.inputSchema as Anthropic.Tool.InputSchema,
               })),
+              tool_choice: { type: request.toolChoice ?? 'auto' },
             }
           : {}),
         ...(request.temperature !== undefined ? { temperature: request.temperature } : {}),
@@ -62,7 +63,7 @@ export class AnthropicLlmAdapter implements LlmPort {
       stopReason: mapStopReason(message.stop_reason),
       usage: { inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens },
       content: message.content.flatMap((block): LlmContentBlock[] => {
-        if (block.type === 'text') return [{ type: 'text', text: block.text }];
+        if (block.type === 'text') return block.text ? [{ type: 'text', text: block.text }] : [];
         if (block.type === 'tool_use') {
           return [{ type: 'tool_call', id: block.id, name: block.name, input: (block.input ?? {}) as Record<string, unknown> }];
         }
@@ -75,7 +76,10 @@ export class AnthropicLlmAdapter implements LlmPort {
 function toAnthropicMessage(message: LlmMessage): Anthropic.MessageParam {
   return {
     role: message.role,
-    content: message.content.map((block): Anthropic.ContentBlockParam => {
+    // The API rejects empty text blocks, which can appear in a tool-only assistant turn.
+    content: message.content
+      .filter((block) => block.type !== 'text' || block.text.trim() !== '')
+      .map((block): Anthropic.ContentBlockParam => {
       switch (block.type) {
         case 'text':
           return { type: 'text', text: block.text };

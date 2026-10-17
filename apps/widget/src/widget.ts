@@ -30,8 +30,8 @@ export class ChatWidget {
   private busy = false;
   private historyLoaded = false;
   private abort: AbortController | null = null;
-  private markMounted!: () => void;
-  private readonly mounted = new Promise<void>((resolve) => (this.markMounted = resolve));
+  private markMounted!: (ok: boolean) => void;
+  private readonly mounted = new Promise<boolean>((resolve) => (this.markMounted = resolve));
 
   private panel!: HTMLElement;
   private launcher!: HTMLButtonElement;
@@ -54,12 +54,13 @@ export class ChatWidget {
       this.config = await this.api.getConfig();
     } catch (err) {
       console.warn('[SmileCare] Widget disabled: could not load configuration.', err);
+      this.markMounted(false);
       return;
     }
     this.applyTheme(this.config.brandColor);
     this.render();
     document.body.appendChild(this.host);
-    this.markMounted();
+    this.markMounted(true);
     if (this.options.openOnLoad) void this.open();
   }
 
@@ -83,7 +84,7 @@ export class ChatWidget {
 
   /** Opens the chat and sends a question on the visitor's behalf (e.g. from a search box on the host page). */
   async ask(question: string): Promise<void> {
-    await this.mounted;
+    if (!(await this.mounted)) return;
     await this.open();
     await this.submit(question);
   }

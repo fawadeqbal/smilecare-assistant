@@ -24,7 +24,7 @@ export class NotificationEventsListener {
   @OnEvent(DomainEvents.ConversationHandedOff, { async: true, suppressErrors: true })
   async onHandedOff(event: ConversationHandedOffEvent) {
     // Short delay so the transcript in the email includes the assistant's reply for this turn.
-    await this.enqueue({ kind: 'conversation.handed_off', ...event }, `handoff-${event.conversationId}`, 5_000);
+    await this.enqueue({ kind: 'conversation.handed_off', ...event }, `handoff-${event.conversationId}-${Date.now()}`, 5_000);
   }
 
   private async enqueue(job: NotificationJob, jobId: string, delay = 0) {

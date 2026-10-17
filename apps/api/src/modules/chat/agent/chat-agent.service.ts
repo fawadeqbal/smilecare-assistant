@@ -55,12 +55,16 @@ export class ChatAgentService {
     let model = '';
     let finished = false;
 
-    for (let round = 0; round < this.config.get('CHAT_MAX_TOOL_ROUNDS') && !finished; round++) {
+    const maxRounds = this.config.get('CHAT_MAX_TOOL_ROUNDS');
+    for (let round = 0; round < maxRounds && !finished; round++) {
       let roundText = '';
       const needsSeparator = reply.length > 0;
+      // On the last allowed round tools are disabled, so Claude must reply in text
+      // and always gets to see the results of tools it already ran.
+      const toolChoice = round === maxRounds - 1 ? 'none' : 'auto';
 
       const result = await this.llm.streamChat(
-        { system, messages, tools: toolDefinitions, signal },
+        { system, messages, tools: toolDefinitions, toolChoice, signal },
         {
           onText: (delta) => {
             if (!roundText && needsSeparator) emit({ type: 'delta', text: '\n\n' });

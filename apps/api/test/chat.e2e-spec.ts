@@ -158,6 +158,22 @@ describe('Chat (e2e)', () => {
       .expect(404);
   });
 
+  it('rejects blank messages and accepts large text documents', async () => {
+    const sessionId = await startSession();
+    await request(app.getHttpServer())
+      .post(`/v1/chat/sessions/${sessionId}/messages`)
+      .send({ widgetKey, visitorId, message: '   \n ' })
+      .expect(400);
+
+    // ~150 KB, above Express's default 100 KB JSON limit.
+    const content = '# Big document\n\n' + 'The clinic offers many services. '.repeat(4_700);
+    await request(app.getHttpServer())
+      .post('/v1/knowledge/documents')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Big document', content })
+      .expect(201);
+  });
+
   it('protects admin endpoints and validates input', async () => {
     await request(app.getHttpServer()).get('/v1/bookings').expect(401);
     await request(app.getHttpServer())

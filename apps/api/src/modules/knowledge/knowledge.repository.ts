@@ -85,10 +85,16 @@ export class KnowledgeRepository {
     });
   }
 
-  /** Cosine-similarity search over one tenant's chunks (HNSW index). Score is 1 - cosine distance. */
-  async searchChunks(businessId: string, embedding: number[], limit: number): Promise<KnowledgeSearchHit[]> {
+  /**
+   * Cosine-similarity search over one tenant's chunks (HNSW index). Score is 1 - cosine distance.
+   * The index is shared by all tenants and filtered afterwards, so `efSearch` widens the candidate
+   * list to keep recall high for small tenants as the total number of chunks grows.
+   */
+  async searchChunks(businessId: string, embedding: number[], limit: number, efSearch = 100): Promise<KnowledgeSearchHit[]> {
     const distance = cosineDistance(documentChunks.embedding, embedding);
-    const rows = await this.db
+    const rows = await this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('hnsw.ef_search', ${String(efSearch)}, true)`);
+      return tx
       .select({
         chunkId: documentChunks.id,
         documentId: documentChunks.documentId,
@@ -101,6 +107,7 @@ export class KnowledgeRepository {
       .where(and(eq(documentChunks.businessId, businessId), eq(documents.status, 'ready')))
       .orderBy(distance)
       .limit(limit);
+    });
     return rows.map((r) => ({ ...r, score: Number(r.score) }));
   }
 }
