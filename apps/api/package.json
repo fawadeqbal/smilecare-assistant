@@ -15,7 +15,9 @@
     "db:migrate": "ts-node -r tsconfig-paths/register src/infrastructure/database/scripts/migrate.ts",
     "db:migrate:prod": "node dist/infrastructure/database/scripts/migrate.js",
     "db:seed": "ts-node -r tsconfig-paths/register src/infrastructure/database/scripts/seed.ts",
-    "db:seed:prod": "node dist/infrastructure/database/scripts/seed.js"
+    "db:seed:prod": "node dist/infrastructure/database/scripts/seed.js",
+    "models:download": "ts-node -r tsconfig-paths/register src/infrastructure/ai/scripts/download-model.ts",
+    "models:download:prod": "node dist/infrastructure/ai/scripts/download-model.js"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -35,6 +37,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
+    "@huggingface/transformers": "^4.3.1",
     "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs/bullmq": "^11.0.5",
     "@nestjs/common": "^11.2.7",

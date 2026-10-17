@@ -2,7 +2,7 @@
 
 An AI customer-support assistant for small businesses, shown here for a fictional dental clinic. It answers visitors' questions from the business's own documents, collects appointment requests through conversation, and hands the chat to a human when it can't help. It installs on any website with one `<script>` tag.
 
-**Stack:** Next.js 16 · NestJS 11 · PostgreSQL 16 + pgvector · Redis + BullMQ · Claude API · Voyage AI embeddings · Docker
+**Stack:** Next.js 16 · NestJS 11 · PostgreSQL 16 + pgvector · Redis + BullMQ · Claude API · free self-hosted embeddings (Transformers.js) · Docker
 
 ![Demo clinic website with the assistant open](docs/screenshots/website.png)
 
@@ -40,14 +40,14 @@ flowchart LR
   API --> PG[(PostgreSQL + pgvector)]
   WK --> PG
   API -- "Messages API (streaming, tools)" --> C[Claude]
-  API & WK -- "embeddings" --> V[Voyage AI]
+  API & WK -- "in-process" --> V[Local embedding model<br/>multilingual-e5-small, CPU]
   WK -- "SMTP" --> M[Staff email]
 ```
 
 **How a message is answered**
 
 1. The widget posts the message to `POST /v1/chat/sessions/:id/messages`.
-2. The API embeds the question (short follow-ups are combined with the previous question) and runs a cosine-similarity search over that business's chunks.
+2. The API embeds the question with the local model (short follow-ups are combined with the previous question) and runs a cosine-similarity search over that business's chunks.
 3. It builds a system prompt with the business's rules, today's date in its time zone, and the retrieved sections, then streams Claude's reply to the widget.
 4. If Claude calls a tool, the API validates the input, runs it, sends the result back to Claude, and keeps streaming. This loops until Claude finishes, with a configurable cap on rounds.
 5. The reply, its sources and token usage are saved. Booking and handoff emails go through the queue, so a slow mail server never delays a reply.
@@ -56,7 +56,7 @@ flowchart LR
 
 | Concern | Approach |
 |---|---|
-| **Swappable providers** | The LLM, embeddings and mailer are *ports* (interfaces) with *adapters* bound in one module each. The chat agent only knows `LlmPort`, so switching models or providers doesn't touch business logic. |
+| **Swappable providers** | The LLM, embeddings and mailer are *ports* (interfaces) with *adapters* bound in one module each. Embeddings run in-process on a free open-source model, so the only paid dependency is Claude. The chat agent only knows `LlmPort`, so switching models or providers doesn't touch business logic. |
 | **Adding capabilities** | Claude's tools are classes extending `ChatTool` with a zod schema. Input is validated before execution and the JSON Schema sent to Claude is generated from the same zod schema. Adding a tool is one class plus one line in `chat.module.ts`. |
 | **Horizontal scaling** | The API is stateless: JWT auth, rate-limit counters in Redis, and no in-memory sessions. Document ingestion and emails run in a separate worker process from the same image. Scale each independently with `--scale api=3 --scale worker=2`. |
 | **Reliability** | Jobs retry with exponential backoff. Ingestion is idempotent and swaps a document's chunks in one transaction, so search never sees a half-indexed document. Config is validated with zod at boot, so the process fails fast. |
@@ -75,7 +75,7 @@ apps/
     src/
       config/             zod-validated environment
       infrastructure/     database (Drizzle schema, migrations, seed), queue, redis,
-                          ai/llm (Claude adapter), ai/embeddings (Voyage), mail, logging
+                          ai/llm (Claude adapter), ai/embeddings (local model), mail, logging
       modules/
         chat/             agent loop, prompt builder, tools (create_booking, request_human_handoff)
         knowledge/        upload, text extraction, chunking, ingestion worker, retrieval
@@ -92,17 +92,18 @@ infra/nginx/              Reverse proxy config (SSE-safe)
 
 ## Run it locally
 
-You need Node 22+, pnpm 10, Docker (for Postgres and Redis), an [Anthropic API key](https://console.anthropic.com/) and a [Voyage AI key](https://www.voyageai.com/).
+You need Node 22+, pnpm 10, Docker (for Postgres and Redis) and an [Anthropic API key](https://console.anthropic.com/). Embeddings are free: they run on your own machine, with no key needed.
 
 ```bash
 pnpm install
 pnpm infra:up                                  # Postgres (pgvector) + Redis in Docker
 
-cp apps/api/.env.example apps/api/.env         # add ANTHROPIC_API_KEY and VOYAGE_API_KEY
+cp apps/api/.env.example apps/api/.env         # add ANTHROPIC_API_KEY
 cp apps/web/.env.example apps/web/.env.local
 
 pnpm --filter @smilecare/shared build
 pnpm db:migrate
+pnpm --filter @smilecare/api models:download   # one-time ~120 MB embedding model download
 pnpm db:seed                                   # demo clinic, admin user, 5 knowledge documents
 
 pnpm dev                                       # API :4000, worker, dashboard :3000, widget watcher
@@ -112,7 +113,7 @@ pnpm dev                                       # API :4000, worker, dashboard :3
 - Staff dashboard: http://localhost:3000/admin (`admin@smilecare.dev` / `ChangeMe123!`)
 - API docs: http://localhost:4000/docs
 
-No Voyage key yet? Set `EMBEDDING_PROVIDER=local` and `RETRIEVAL_MIN_SCORE=0.1` to use the built-in offline embeddings. They match on shared words rather than meaning, so they're for development only.
+**About embeddings.** Search runs on [`multilingual-e5-small`](https://huggingface.co/intfloat/multilingual-e5-small), an open-source model executed on the CPU with Transformers.js. It costs nothing per request, keeps documents on your server, and understands Urdu and 90+ other languages: a visitor can ask in Urdu and match English documents. Embedding a question takes about 15 ms after the model loads, which takes about 1.5 s at startup. To use another model, set `EMBEDDING_MODEL`. If its output size isn't 384, also change `EMBEDDING_DIMENSIONS` and add a migration.
 
 ## Install on any website
 

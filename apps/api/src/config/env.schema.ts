@@ -44,14 +44,16 @@ export const envSchema = z.object({
   CHAT_HISTORY_LIMIT: z.coerce.number().int().positive().default(12),
   CHAT_MAX_TOOL_ROUNDS: z.coerce.number().int().positive().default(4),
 
-  // Embeddings
-  EMBEDDING_PROVIDER: z.enum(['voyage', 'local']).default('voyage'),
-  VOYAGE_API_KEY: z.string().default(''),
-  VOYAGE_MODEL: z.string().default('voyage-4'),
+  // Embeddings (free, self-hosted). `hash` is a test-only provider that needs no model.
+  EMBEDDING_PROVIDER: z.enum(['local', 'hash']).default('local'),
+  EMBEDDING_MODEL: z.string().default('Xenova/multilingual-e5-small'),
+  EMBEDDING_DTYPE: z.enum(['fp32', 'fp16', 'q8', 'q4']).default('q8'),
+  EMBEDDING_CACHE_DIR: z.string().default('./.models'),
 
-  // Retrieval
+  // Retrieval. The minimum score depends on the embedding model: E5 models score
+  // unrelated text around 0.75-0.80 and relevant text above ~0.82.
   RETRIEVAL_TOP_K: z.coerce.number().int().positive().default(5),
-  RETRIEVAL_MIN_SCORE: z.coerce.number().min(0).max(1).default(0.35),
+  RETRIEVAL_MIN_SCORE: z.coerce.number().min(0).max(1).default(0.78),
   CHUNK_SIZE_CHARS: z.coerce.number().int().positive().default(1800),
   CHUNK_OVERLAP_CHARS: z.coerce.number().int().nonnegative().default(300),
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
@@ -90,9 +92,7 @@ export function validateEnv(raw: Record<string, unknown>): Env {
   const env = parsed.data;
   if (env.NODE_ENV === 'production') {
     if (!env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is required in production');
-    if (env.EMBEDDING_PROVIDER === 'voyage' && !env.VOYAGE_API_KEY) {
-      throw new Error('VOYAGE_API_KEY is required when EMBEDDING_PROVIDER=voyage');
-    }
+    if (env.EMBEDDING_PROVIDER === 'hash') throw new Error('EMBEDDING_PROVIDER=hash is for tests only');
   }
   return env;
 }

@@ -2,10 +2,18 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Dependencies allowed to run install scripts (native binaries).
 onlyBuiltDependencies:
   - "@nestjs/core"
-  - "bcrypt"
   - "esbuild"
   - "msgpackr-extract"
   - "sharp"
   - "unrs-resolver"
+
+# Install scripts we deliberately skip: onnxruntime-node ships its CPU binaries
+# in the package (its script only fetches optional GPU builds); the rest are telemetry/optional.
+ignoredBuiltDependencies:
+  - "onnxruntime-node"
+  - "protobufjs"
+  - "@scarf/scarf"
+  - "@parcel/watcher"

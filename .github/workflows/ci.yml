@@ -27,7 +27,7 @@ jobs:
       DATABASE_URL: postgresql://smilecare:smilecare@localhost:5432/smilecare
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: ci-only-secret-at-least-16-chars
-      EMBEDDING_PROVIDER: local
+      EMBEDDING_PROVIDER: hash
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

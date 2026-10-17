@@ -10,14 +10,13 @@ const STOPWORDS = new Set(
 );
 
 /**
- * Offline, deterministic embeddings based on hashed word and bigram features.
+ * Deterministic embeddings from hashed word and bigram features.
  *
- * FOR LOCAL DEVELOPMENT AND TESTS ONLY: it lets the whole stack run without a
- * Voyage key and keeps tests reproducible. It matches on shared words, not meaning,
- * so use EMBEDDING_PROVIDER=voyage for anything real.
+ * FOR TESTS ONLY: instant, needs no model download, and gives reproducible results.
+ * It matches on shared words, not meaning, so real deployments use EMBEDDING_PROVIDER=local.
  */
 @Injectable()
-export class LocalHashEmbeddingsAdapter implements EmbeddingsPort {
+export class HashEmbeddingsAdapter implements EmbeddingsPort {
   readonly dimensions = EMBEDDING_DIMENSIONS;
 
   async embed(texts: string[]): Promise<number[][]> {

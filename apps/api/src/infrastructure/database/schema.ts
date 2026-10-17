@@ -22,10 +22,10 @@ import type {
 
 /**
  * Vector size used by the embeddings column.
- * Must match the embedding model's output (Voyage 4 family defaults to 1024).
+ * Must match the embedding model's output (multilingual-e5-small and bge-small produce 384).
  * Changing it requires a new migration and re-embedding all documents.
  */
-export const EMBEDDING_DIMENSIONS = 1024;
+export const EMBEDDING_DIMENSIONS = 384;
 
 const timestamps = {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

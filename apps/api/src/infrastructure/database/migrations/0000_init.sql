@@ -56,7 +56,7 @@ CREATE TABLE "document_chunks" (
 	"business_id" uuid NOT NULL,
 	"chunk_index" integer NOT NULL,
 	"content" text NOT NULL,
-	"embedding" vector(1024) NOT NULL,
+	"embedding" vector(384) NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint

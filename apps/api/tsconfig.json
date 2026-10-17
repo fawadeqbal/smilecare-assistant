@@ -10,7 +10,6 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "incremental": true,
     "strictPropertyInitialization": false,
     "types": ["node", "jest"]
   },

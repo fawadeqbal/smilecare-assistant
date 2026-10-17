@@ -10,6 +10,7 @@ This document explains how the system is put together and why, for anyone extend
 | Worker | `apps/api/src/worker.ts` | Adding replicas | Document ingestion (chunk + embed), notification emails |
 | Web | `apps/web` (Next.js) | Adding replicas | Demo clinic site, staff dashboard, backend-for-frontend proxy |
 | Postgres + pgvector | — | Vertical; read replicas later | Source of truth and vector search (HNSW index) |
+| Embedding model | Inside API and worker | Scales with them | `multilingual-e5-small` on CPU (ONNX Runtime), ~200 MB RAM per process, loaded once at startup |
 | Redis | — | Vertical / managed | BullMQ queues, distributed rate-limit counters |
 
 API and worker share one codebase and one Docker image. `CoreModule` holds the infrastructure both need (config, logging, database, Redis, queues, AI adapters, mail). `AppModule` adds HTTP modules and `WorkerModule` adds queue processors.
@@ -23,7 +24,7 @@ modules/<feature>/
   *.repository.ts   all SQL for the feature (Drizzle), always scoped by business_id
 infrastructure/
   ai/llm/llm.port.ts               interface  ← anthropic-llm.adapter.ts
-  ai/embeddings/embeddings.port.ts interface  ← voyage / local-hash adapters
+  ai/embeddings/embeddings.port.ts interface  ← local (Transformers.js) / hash (tests) adapters
   mail/mailer.port.ts              interface  ← smtp / console adapters
 ```
 
@@ -34,7 +35,7 @@ Dependencies point inward: features depend on ports, and adapters are bound in e
 `ChatAgentService.handleMessage`:
 
 1. Save the visitor message and load the last `CHAT_HISTORY_LIMIT` messages.
-2. Retrieve: embed the query (`input_type=query`) and run a top-k cosine search filtered by `business_id` and `RETRIEVAL_MIN_SCORE`. Short follow-ups such as "and on Saturday?" are joined with the previous visitor question so they retrieve well.
+2. Retrieve: embed the query with the local model (E5 `query:` prefix; documents use `passage:`) and run a top-k cosine search filtered by `business_id` and `RETRIEVAL_MIN_SCORE`. Short follow-ups such as "and on Saturday?" are joined with the previous visitor question so they retrieve well.
 3. Build the system prompt (`prompt-builder.ts`, a pure function): role, grounding rules, booking protocol, handoff criteria, prompt-injection guard, and the retrieved sections inside `<knowledge>`.
 4. Call `LlmPort.streamChat` with the tool definitions and forward text deltas to the SSE stream.
 5. If the stop reason is `tool_use`, validate each tool call with its zod schema, execute it, append `tool_result` blocks, and loop (at most `CHAT_MAX_TOOL_ROUNDS`).
@@ -44,7 +45,7 @@ Dependencies point inward: features depend on ports, and adapters are bound in e
 
 ## Data model
 
-`businesses` (tenant) → `admin_users`, `documents` → `document_chunks` (vector(1024), HNSW cosine index), `conversations` → `messages`, `bookings`.
+`businesses` (tenant) → `admin_users`, `documents` → `document_chunks` (vector(384), HNSW cosine index), `conversations` → `messages`, `bookings`.
 
 - Every table except `businesses` carries `business_id`. Repositories always filter on it, and the admin `business_id` comes from the signed JWT, never from request input.
 - `documents.content` keeps the extracted text so documents can be re-embedded, for example after changing embedding models, without re-uploading.
@@ -73,6 +74,16 @@ The session is validated before the stream opens, so bad requests get normal JSO
 - **Rate limits** are stored in Redis, so they hold across replicas: a general per-IP budget, a stricter budget for sending chat messages (each costs tokens), and a tight one on login.
 - **Prompt injection:** retrieved documents and visitor messages are framed as data in the prompt, tools validate every argument, and tool side effects are capped (for example, at most 3 bookings per conversation).
 
+## Embeddings
+
+Embeddings are produced in-process by an open-source model, so there is no embeddings API bill and no data leaves the server.
+
+- **Model:** `Xenova/multilingual-e5-small`, quantized to int8 (~120 MB). It has 384 dimensions and covers 100 languages, so a visitor can ask in Urdu and match English documents.
+- **Measured on the demo knowledge base:** the right section was in the top 3 for 8 of 9 test questions, including two in Urdu. The English-only `bge-small-en-v1.5` scored 7 of 9 and missed both Urdu questions.
+- **Thresholds are model-specific.** E5 scores unrelated text around 0.75-0.80 and relevant text above about 0.82, hence `RETRIEVAL_MIN_SCORE=0.78`. Use *Dashboard > Knowledge > Test a question* to see live scores when tuning.
+- **Swapping models:** `EMBEDDING_MODEL` accepts any Transformers.js feature-extraction model. `profileFor()` applies the right prefixes and pooling for E5 and BGE families. A different output size needs `EMBEDDING_DIMENSIONS` changed, a migration, and a re-index.
+- **Tests** use `EMBEDDING_PROVIDER=hash`, a deterministic word-hashing embedder, so CI doesn't download the model.
+
 ## Scaling path
 
 | Load | Change |
@@ -81,4 +92,5 @@ The session is validated before the stream opens, so bad requests get normal JSO
 | Large uploads or many tenants re-indexing | Add worker replicas or raise processor concurrency. |
 | Millions of chunks | pgvector HNSW scales well; tune `ef_search`, or partition `document_chunks` by `business_id`. |
 | Repeated identical questions | Cache retrieval results per business and query hash in Redis. |
-| Cost | Use a smaller Claude model for simple FAQ turns, and add prompt caching on the static part of the system prompt. |
+| Cost | Use a smaller Claude model for simple FAQ turns, and add prompt caching on the static part of the system prompt. Embeddings already cost nothing. |
+| Embedding throughput | If ingestion of very large document sets becomes CPU-bound, run more worker replicas or point `EMBEDDING_MODEL` at a smaller model. |

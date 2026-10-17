@@ -1,5 +1,5 @@
 process.env.NODE_ENV = 'test';
-process.env.EMBEDDING_PROVIDER = 'local';
+process.env.EMBEDDING_PROVIDER = 'hash';
 process.env.RETRIEVAL_MIN_SCORE = '0';
 process.env.LOG_LEVEL = 'warn';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-16-chars';

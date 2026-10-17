@@ -1,6 +1,6 @@
 # SmileCare Assistant — AI Customer-Support Chatbot
 
-> This is the original planning spec. A few choices were refined during the build: Claude is the only LLM, the ORM is Drizzle, ingestion and emails run on BullMQ workers, and handoff is decided by Claude through a tool rather than by a score threshold alone. See the [README](../README.md) and [architecture notes](architecture.md) for the system as built.
+> This is the original planning spec. A few choices were refined during the build: Claude is the only LLM, embeddings run on a free self-hosted model (so vectors are 384-dimensional), the ORM is Drizzle, ingestion and emails run on BullMQ workers, and handoff is decided by Claude through a tool rather than by a score threshold alone. See the [README](../README.md) and [architecture notes](architecture.md) for the system as built.
 
 An AI chatbot for a (fictional) dental clinic that answers patient questions from the clinic's own documents, books appointments, and hands off to staff when it can't help. Built as an Upwork portfolio project that can be re-skinned for any small business.
 
@@ -26,7 +26,7 @@ An AI chatbot for a (fictional) dental clinic that answers patient questions fro
 | Database | PostgreSQL + pgvector |
 | ORM | Drizzle ORM (native pgvector support, SQL migrations) |
 | LLM | Claude API (behind a provider interface) |
-| Embeddings | Voyage AI (behind a provider interface) |
+| Embeddings | Free self-hosted model via Transformers.js (behind a provider interface) |
 | Email | Nodemailer (SMTP), sent from a queue worker |
 | Queue | BullMQ on Redis (document ingestion, notifications) |
 | Hosting | Own server (Docker Compose: web, api, postgres, nginx) |
