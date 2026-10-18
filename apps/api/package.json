@@ -5,7 +5,7 @@
   "description": "SmileCare Assistant API (NestJS): RAG chat, knowledge base, bookings and admin endpoints.",
   "scripts": {
     "build": "nest build",
-    "dev": "concurrently -n api,worker -c blue,magenta \"nest start --watch --preserveWatchOutput\" \"nest start --watch --preserveWatchOutput --entryFile worker\"",
+    "dev": "nest build && concurrently -k -n build,api,worker -c gray,blue,magenta \"nest build --watch --preserveWatchOutput -c nest-cli.dev.json\" \"node --watch --enable-source-maps dist/main.js\" \"node --watch --enable-source-maps dist/worker.js\"",
     "start": "node dist/main.js",
     "start:worker": "node dist/worker.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
