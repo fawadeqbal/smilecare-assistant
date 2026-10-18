@@ -63,7 +63,9 @@ Dependencies point inward: features depend on ports, and adapters are bound in e
 | `booking` | An appointment request was created; the widget shows a card |
 | `handoff` | Staff were notified |
 | `done` | The final message id, conversation status and sources |
-| `error` | A user-safe error message |
+| `error` | A user-safe error message. With a `code` (`missing_key`, `invalid_key`, `no_credit`, `model_unavailable`, `rate_limited`, `unavailable`) it's a setup or provider problem: the widget shows an explanation card with **Try again** |
+
+When the model can't be reached, the Claude adapter throws `LlmUnavailableError` with one of those reasons. The chat service turns it into the coded `error` event and records it in Redis. `GET /v1/assistant/status` reports it to the dashboard (banner plus sidebar pill), `POST /v1/assistant/status/check` makes a one-token test call, and the next successful reply clears it.
 
 The session is validated before the stream opens, so bad requests get normal JSON errors (400/403/404/429). A 15-second comment heartbeat keeps proxies from closing idle connections, and nginx buffering is disabled for this route. If the visitor closes the page, the upstream Claude request is aborted.
 

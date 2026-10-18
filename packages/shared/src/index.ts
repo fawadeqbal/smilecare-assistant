@@ -179,7 +179,7 @@ export type ChatStreamEvent =
   | { type: 'booking'; booking: PublicBookingSummary }
   | { type: 'handoff'; message: string }
   | { type: 'done'; messageId: string; conversationStatus: ConversationStatus; sources: MessageSource[] }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string; code?: AssistantIssue };
 
 export interface PublicBookingSummary {
   id: string;
@@ -187,6 +187,21 @@ export interface PublicBookingSummary {
   service: string | null;
   preferredTime: string | null;
   status: BookingStatus;
+}
+
+// ---------------------------------------------------------------------------
+// Assistant health (is the AI model reachable?)
+// ---------------------------------------------------------------------------
+
+/** Why the assistant can't answer right now. Everything except the last two needs the site owner to act. */
+export const ASSISTANT_ISSUES = ['missing_key', 'invalid_key', 'no_credit', 'model_unavailable', 'rate_limited', 'unavailable'] as const;
+export type AssistantIssue = (typeof ASSISTANT_ISSUES)[number];
+
+export interface AssistantStatus {
+  state: 'ready' | AssistantIssue;
+  /** When the current problem was first seen; null when ready or never checked. */
+  since: string | null;
+  model: string;
 }
 
 /** Sent by a clinic website's own booking form (no chat involved). */

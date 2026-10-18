@@ -1,18 +1,23 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { ChatStreamEvent, SessionHistoryResponse, StartSessionResponse } from '@smilecare/shared';
 import type { BusinessRow, ConversationRow } from '@/infrastructure/database/schema';
 import { BusinessesService } from '@/modules/businesses/businesses.service';
 import { ConversationsRepository } from '@/modules/conversations/conversations.repository';
 import { toChatMessage } from '@/modules/conversations/conversations.service';
+import { LlmUnavailableError } from '@/infrastructure/ai/llm/llm.port';
 import { ChatAgentService } from './agent/chat-agent.service';
+import { AssistantStatusService, visitorMessage } from './assistant-status.service';
 
 /** Public chat use cases: resolves the tenant and visitor, then delegates to the agent. */
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly businesses: BusinessesService,
     private readonly conversations: ConversationsRepository,
     private readonly agent: ChatAgentService,
+    private readonly status: AssistantStatusService,
   ) {}
 
   async startSession(widgetKey: string, visitorId: string): Promise<StartSessionResponse> {
@@ -37,12 +42,21 @@ export class ChatService {
     return { business, conversation };
   }
 
-  sendMessage(
+  async sendMessage(
     session: { business: BusinessRow; conversation: ConversationRow },
     text: string,
     emit: (event: ChatStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    return this.agent.handleMessage({ ...session, text, emit, signal });
+    try {
+      await this.agent.handleMessage({ ...session, text, emit, signal });
+      await this.status.recordSuccess();
+    } catch (err) {
+      if (!(err instanceof LlmUnavailableError)) throw err;
+      // A setup or provider problem, not a bug: tell the visitor plainly and flag it for the dashboard.
+      this.logger.warn(`Assistant can't answer (${err.reason}): ${err.message}`);
+      await this.status.recordIssue(err.reason);
+      emit({ type: 'error', code: err.reason, message: visitorMessage(err.reason, session.business.name) });
+    }
   }
 }

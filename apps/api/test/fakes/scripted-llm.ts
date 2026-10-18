@@ -1,4 +1,5 @@
-import type { LlmChatRequest, LlmChatResult, LlmContentBlock, LlmPort, LlmStreamHandlers } from '@/infrastructure/ai/llm/llm.port';
+import type { AssistantIssue } from '@smilecare/shared';
+import { LlmUnavailableError, type LlmChatRequest, type LlmChatResult, type LlmContentBlock, type LlmPort, type LlmStreamHandlers } from '@/infrastructure/ai/llm/llm.port';
 
 /**
  * Deterministic stand-in for Claude, used by e2e tests so the full chat pipeline
@@ -12,8 +13,24 @@ import type { LlmChatRequest, LlmChatResult, LlmContentBlock, LlmPort, LlmStream
  */
 export class ScriptedLlm implements LlmPort {
   readonly requests: LlmChatRequest[] = [];
+  readonly modelName = 'scripted';
+  private failure: AssistantIssue | null = null;
+
+  isConfigured(): boolean {
+    return true;
+  }
+
+  /** Makes the next call fail the way a real provider would (no credit, bad key, ...). */
+  failNext(reason: AssistantIssue) {
+    this.failure = reason;
+  }
 
   async streamChat(request: LlmChatRequest, handlers: LlmStreamHandlers = {}): Promise<LlmChatResult> {
+    if (this.failure) {
+      const reason = this.failure;
+      this.failure = null;
+      throw new LlmUnavailableError(reason, `scripted ${reason}`);
+    }
     this.requests.push(request);
     const last = request.messages.at(-1);
     const blocks = last?.content ?? [];

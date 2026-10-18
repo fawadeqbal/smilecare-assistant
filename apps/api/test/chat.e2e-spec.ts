@@ -236,4 +236,24 @@ describe('Chat (e2e)', () => {
       .send({ widgetKey: 'pk_demo_does_not_exist', patientName: 'Sam Lee', phone: '5551234567', preferredTime: 'Saturday' })
       .expect(404);
   });
+  it('explains setup problems to the visitor and flags them on the dashboard', async () => {
+    const sessionId = await startSession();
+    llm.failNext('no_credit');
+    const events = await send(sessionId, 'How much is teeth whitening?');
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({ type: 'error', code: 'no_credit' });
+    expect((events[0] as { message: string }).message).toMatch(/run out of credit/);
+
+    const broken = await request(app.getHttpServer()).get('/v1/assistant/status').set('Authorization', `Bearer ${token}`).expect(200);
+    expect(broken.body).toMatchObject({ state: 'no_credit', since: expect.any(String) });
+
+    llm.failNext('invalid_key');
+    const check = await request(app.getHttpServer()).post('/v1/assistant/status/check').set('Authorization', `Bearer ${token}`).expect(200);
+    expect(check.body.state).toBe('invalid_key');
+
+    await send(sessionId, 'How much is teeth whitening?');
+    const fixed = await request(app.getHttpServer()).get('/v1/assistant/status').set('Authorization', `Bearer ${token}`).expect(200);
+    expect(fixed.body).toMatchObject({ state: 'ready', since: null });
+    await request(app.getHttpServer()).get('/v1/assistant/status').expect(401);
+  });
 });

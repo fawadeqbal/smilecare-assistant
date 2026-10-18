@@ -4,6 +4,8 @@ import { BusinessesModule } from '@/modules/businesses/businesses.module';
 import { ConversationsModule } from '@/modules/conversations/conversations.module';
 import { KnowledgeModule } from '@/modules/knowledge/knowledge.module';
 import { ChatAgentService } from './agent/chat-agent.service';
+import { AssistantStatusController } from './assistant-status.controller';
+import { AssistantStatusService } from './assistant-status.service';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { CHAT_TOOLS, ChatTool } from './tools/chat-tool';
@@ -15,11 +17,12 @@ const TOOL_CLASSES = [CreateBookingTool, RequestHandoffTool];
 
 @Module({
   imports: [BusinessesModule, ConversationsModule, KnowledgeModule, BookingsModule],
-  controllers: [ChatController],
+  controllers: [ChatController, AssistantStatusController],
   providers: [
     ...TOOL_CLASSES,
     { provide: CHAT_TOOLS, inject: TOOL_CLASSES, useFactory: (...tools: ChatTool[]) => tools },
     ChatAgentService,
+    AssistantStatusService,
     ChatService,
   ],
 })

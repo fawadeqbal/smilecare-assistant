@@ -5,7 +5,25 @@
  * Anthropic Messages API; adding another provider means writing one new adapter
  * and binding it to LLM_PORT, with no changes to the chat logic.
  */
+import type { AssistantIssue } from '@smilecare/shared';
+
 export const LLM_PORT = Symbol('LLM_PORT');
+
+/**
+ * Thrown by adapters when the model can't be used for a reason the site owner (or time)
+ * has to fix: no key, a rejected key, no credit, an unknown model, or the provider being down.
+ * Anything else is an ordinary bug and is thrown as-is.
+ */
+export class LlmUnavailableError extends Error {
+  constructor(
+    readonly reason: AssistantIssue,
+    message: string,
+    options?: { cause?: unknown },
+  ) {
+    super(message, options);
+    this.name = 'LlmUnavailableError';
+  }
+}
 
 export type LlmContentBlock =
   | { type: 'text'; text: string }
@@ -55,6 +73,10 @@ export interface LlmStreamHandlers {
 }
 
 export interface LlmPort {
-  /** Streams text deltas through `handlers.onText` and resolves with the complete turn. */
+  /** Streams text deltas through `handlers.onText` and resolves with the complete turn. Throws LlmUnavailableError for setup/provider problems. */
   streamChat(request: LlmChatRequest, handlers?: LlmStreamHandlers): Promise<LlmChatResult>;
+  /** False when the adapter has no credentials at all, so it can't possibly answer. */
+  isConfigured(): boolean;
+  /** The model name, for status displays. */
+  readonly modelName: string;
 }

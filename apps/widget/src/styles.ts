@@ -163,6 +163,21 @@ svg { flex: none; }
 .notice .tile { flex: none; width: 34px; height: 34px; border-radius: 50%; background: #FFEFD1; color: #8A4B00; display: grid; place-items: center; }
 .notice svg { width: 18px; height: 18px; }
 
+.issue {
+  margin-left: 36px; display: flex; gap: 12px; align-items: flex-start; max-width: 296px;
+  background: #fff; border: 1.5px solid #FFD27A; border-radius: 18px; padding: 14px;
+  box-shadow: 0 1px 2px rgba(11,16,32,0.06); animation: rise .28s ease-out both;
+}
+.issue .tile { flex: none; width: 34px; height: 34px; border-radius: 50%; background: #FFEFD1; color: #8A4B00; display: grid; place-items: center; }
+.issue .tile svg { width: 18px; height: 18px; }
+.issue strong { display: block; font-size: 15px; line-height: 1.3; }
+.issue p { margin: 4px 0 10px; font-size: 13.5px; line-height: 1.45; color: var(--night-700); }
+.issue button {
+  height: 34px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  background: #fff; color: var(--ink); border: 1.5px solid var(--line-strong);
+}
+.issue button:hover { border-color: var(--ink); }
+
 /* Quick replies */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px 50px; background: var(--pearl); }
 .chips:empty { display: none; }

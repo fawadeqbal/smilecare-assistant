@@ -110,6 +110,8 @@ pnpm db:seed                                   # demo clinic, admin user, 5 know
 pnpm dev                                       # API :4000, worker, dashboard :3000, widget watcher
 ```
 
+No key yet, or out of credit? Everything still runs. The chat shows a clear note ("Sunny needs an API key", "AI credit has run out", ...) instead of an error, and the dashboard shows a banner with the exact fix and a **Check again** button that makes a one-token test call.
+
 - Clinic website with the widget: http://localhost:3000
 - Staff dashboard: http://localhost:3000/admin (`admin@smilecare.dev` / `ChangeMe123!`)
 - API docs: http://localhost:4000/docs

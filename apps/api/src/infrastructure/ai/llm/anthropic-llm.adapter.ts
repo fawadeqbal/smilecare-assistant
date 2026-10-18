@@ -1,14 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Injectable, Logger } from '@nestjs/common';
 import { AppConfig } from '@/config/app-config.service';
-import type {
-  LlmChatRequest,
-  LlmChatResult,
-  LlmContentBlock,
-  LlmMessage,
-  LlmPort,
-  LlmStopReason,
-  LlmStreamHandlers,
+import {
+  LlmUnavailableError,
+  type LlmChatRequest,
+  type LlmChatResult,
+  type LlmContentBlock,
+  type LlmMessage,
+  type LlmPort,
+  type LlmStopReason,
+  type LlmStreamHandlers,
 } from './llm.port';
 
 /** Claude (Anthropic Messages API) implementation of the LLM port. */
@@ -16,20 +17,45 @@ import type {
 export class AnthropicLlmAdapter implements LlmPort {
   private readonly logger = new Logger(AnthropicLlmAdapter.name);
   private readonly client: Anthropic;
+  private readonly apiKey: string;
   private readonly model: string;
   private readonly defaultMaxTokens: number;
 
   constructor(config: AppConfig) {
+    this.apiKey = config.get('ANTHROPIC_API_KEY').trim();
     this.client = new Anthropic({
-      apiKey: config.get('ANTHROPIC_API_KEY') || undefined,
+      // `null` (not undefined) so the SDK doesn't silently fall back to another env variable.
+      apiKey: this.apiKey || null,
       maxRetries: 2,
       timeout: 60_000,
     });
     this.model = config.get('CLAUDE_MODEL');
     this.defaultMaxTokens = config.get('CLAUDE_MAX_TOKENS');
+    if (!this.apiKey) {
+      this.logger.warn('ANTHROPIC_API_KEY is not set. The chat will tell visitors it needs a key until you add one to apps/api/.env and restart.');
+    }
+  }
+
+  get modelName(): string {
+    return this.model;
+  }
+
+  isConfigured(): boolean {
+    return this.apiKey.length > 0;
   }
 
   async streamChat(request: LlmChatRequest, handlers: LlmStreamHandlers = {}): Promise<LlmChatResult> {
+    if (!this.isConfigured()) {
+      throw new LlmUnavailableError('missing_key', 'ANTHROPIC_API_KEY is not set');
+    }
+    try {
+      return await this.runStream(request, handlers);
+    } catch (err) {
+      throw toUnavailableError(err, this.model) ?? err;
+    }
+  }
+
+  private async runStream(request: LlmChatRequest, handlers: LlmStreamHandlers): Promise<LlmChatResult> {
     const stream = this.client.messages.stream(
       {
         model: this.model,
@@ -71,6 +97,30 @@ export class AnthropicLlmAdapter implements LlmPort {
       }),
     };
   }
+}
+
+/** Maps provider errors that need the owner's attention (or a retry) onto LlmUnavailableError. */
+export function toUnavailableError(err: unknown, model: string): LlmUnavailableError | null {
+  if (err instanceof Anthropic.APIUserAbortError) return null;
+  const detail = err instanceof Error ? err.message : String(err);
+  const type = (err as { error?: { error?: { type?: string } } })?.error?.error?.type;
+
+  if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
+    return new LlmUnavailableError('invalid_key', `Claude rejected the API key: ${detail}`, { cause: err });
+  }
+  if (type === 'billing_error' || /credit balance|billing|purchase credits/i.test(detail)) {
+    return new LlmUnavailableError('no_credit', `The Anthropic account has no credit left: ${detail}`, { cause: err });
+  }
+  if (err instanceof Anthropic.NotFoundError || (err instanceof Anthropic.BadRequestError && /model/i.test(detail) && /not|invalid|unknown/i.test(detail))) {
+    return new LlmUnavailableError('model_unavailable', `Model "${model}" is not available to this API key: ${detail}`, { cause: err });
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return new LlmUnavailableError('rate_limited', `Claude rate limit reached: ${detail}`, { cause: err });
+  }
+  if (err instanceof Anthropic.InternalServerError || err instanceof Anthropic.APIConnectionError) {
+    return new LlmUnavailableError('unavailable', `Claude is unreachable or overloaded: ${detail}`, { cause: err });
+  }
+  return null;
 }
 
 function toAnthropicMessage(message: LlmMessage): Anthropic.MessageParam {

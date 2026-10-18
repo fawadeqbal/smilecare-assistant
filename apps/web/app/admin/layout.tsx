@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { AssistantStatusBanner, AssistantStatusPill } from '@/components/admin/assistant-status';
 import { ArcDecoration, SmileMark, Wordmark } from '@/components/brand';
 import { BookIcon, CalendarIcon, ChatIcon, ExternalIcon, GridIcon, MenuIcon, SignOutIcon, SlidersIcon } from '@/components/icons';
 import { api } from '@/lib/api';
@@ -90,13 +91,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div id="admin-nav" className={`${menuOpen ? 'flex' : 'hidden'} flex-1 flex-col gap-[22px] px-3.5 pb-5 lg:flex`}>
-          <div className="flex items-center gap-2.5 rounded-[14px] bg-success-bg px-3 py-2.5">
-            <span className="size-2.5 flex-none rounded-full bg-success shadow-[0_0_0_4px_rgba(14,159,110,0.18)]" />
-            <div className="flex flex-col leading-[1.3]">
-              <strong className="text-sm text-success-ink">{settings.data?.botName ?? 'Sunny'} is live</strong>
-              <span className="text-xs text-[#2F5E4E]">Answering on your website</span>
-            </div>
-          </div>
+          <AssistantStatusPill botName={settings.data?.botName ?? 'Sunny'} />
 
           <nav aria-label="Dashboard" className="flex flex-col gap-0.5">
             <span className="px-3 pb-1.5 text-xs font-bold tracking-[0.1em] text-ink-400 uppercase">Workspace</span>
@@ -169,6 +164,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <ExternalIcon size={14} className="text-ink-400" />
           </Link>
         </div>
+        <AssistantStatusBanner botName={settings.data?.botName ?? 'Sunny'} />
         {children}
       </main>
     </div>

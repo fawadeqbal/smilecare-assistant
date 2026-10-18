@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatStreamEvent, MessageSource, PublicBookingSummary, WidgetConfig } from '@smilecare/shared';
+import type { AssistantIssue, ChatMessage, ChatStreamEvent, MessageSource, PublicBookingSummary, WidgetConfig } from '@smilecare/shared';
 import { ApiError, WidgetApi } from './api';
 import { escapeHtml, renderMessage } from './format';
 import { createStore } from './storage';
@@ -26,6 +26,8 @@ const ICONS = {
   send: stroke('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
   restart: stroke('<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5"/>'),
   person: stroke('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
+  plug: stroke('<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>'),
+  clock: stroke('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
 };
 
 /** Sunny's face: a smile and two eyes. `light` = brand face on white. */
@@ -37,6 +39,16 @@ const sunny = (size: number, light = false) => {
 /** Launcher face: the smile and eyes with the aqua spark, no circle (the button is the circle). */
 const LAUNCHER_FACE =
   '<svg class="face" viewBox="0 0 40 40" aria-hidden="true"><path d="M11 19 Q20 29 29 19" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="14" cy="13.5" r="2" fill="currentColor"/><circle cx="26" cy="13.5" r="2" fill="currentColor"/><path d="M32 4l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z" fill="#2FE0C8"/></svg>';
+/** Headlines for problems reaching the AI model. The server sends the explanation. */
+const ISSUE_TITLES: Record<AssistantIssue, (bot: string) => string> = {
+  missing_key: (bot) => `${bot} needs an API key`,
+  invalid_key: () => 'API key not accepted',
+  no_credit: () => 'AI credit has run out',
+  model_unavailable: () => 'AI model not available',
+  rate_limited: () => 'Busy right now',
+  unavailable: () => 'AI service not responding',
+};
+
 const LAUNCHER_CLOSE = ICONS.close.replace('<svg ', '<svg class="x" ');
 
 const ARC = '<svg class="arc" aria-hidden="true" viewBox="0 0 200 200"><path d="M30 80 Q100 170 170 80" stroke="#1B2340" stroke-width="22" fill="none" stroke-linecap="round"/></svg>';
@@ -264,6 +276,7 @@ export class ChatWidget {
     const bubble = this.addBot('');
     bubble.innerHTML = '<span class="typing" aria-label="Sunny is typing"><i></i><i></i><i></i></span>';
     let reply = '';
+    let issue: Extract<ChatStreamEvent, { type: 'error' }> | null = null;
     this.abort = new AbortController();
 
     try {
@@ -288,12 +301,18 @@ export class ChatWidget {
               if (reply) this.addSources(bubble, event.sources);
               break;
             case 'error':
-              throw new Error(event.message);
+              // A known setup/provider problem gets a clear card instead of a generic error.
+              if (event.code) issue = event;
+              else throw new Error(event.message);
+              break;
           }
         },
         this.abort.signal,
       );
       if (!reply) bubble.closest('.row')?.remove();
+      // `issue` is set inside the stream callback, which TypeScript's narrowing can't see.
+      const found = issue as Extract<ChatStreamEvent, { type: 'error' }> | null;
+      if (found?.code) this.addIssue(found.code, found.message, text);
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       if (!reply) bubble.closest('.row')?.remove();
@@ -351,6 +370,21 @@ export class ChatWidget {
   private addNotice(text: string) {
     const node = el('div', { class: 'notice', role: 'status' });
     node.innerHTML = `<span class="tile">${ICONS.person}</span><span>${escapeHtml(text)}</span>`;
+    this.list.appendChild(node);
+    this.scroll();
+  }
+
+  /** Explains why the assistant can't answer (no API key, no credit, ...) with a way to retry. */
+  private addIssue(code: AssistantIssue, message: string, question: string) {
+    const node = el('div', { class: 'issue', role: 'alert' });
+    const transient = code === 'rate_limited' || code === 'unavailable';
+    node.innerHTML = `<span class="tile">${transient ? ICONS.clock : ICONS.plug}</span><div><strong>${escapeHtml(
+      ISSUE_TITLES[code](this.config!.botName),
+    )}</strong><p>${escapeHtml(message)}</p><button type="button">Try again</button></div>`;
+    node.querySelector('button')!.addEventListener('click', () => {
+      node.remove();
+      void this.submit(question);
+    });
     this.list.appendChild(node);
     this.scroll();
   }
