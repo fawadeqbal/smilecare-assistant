@@ -217,4 +217,23 @@ describe('Chat (e2e)', () => {
       lastVisitorMessage: 'Can I talk to a human please?',
     });
   });
+  it('accepts appointment requests from the clinic website form', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/v1/public/bookings')
+      .send({ widgetKey, patientName: 'Sam Lee', phone: '(555) 123-4567', service: 'Whitening', preferredTime: 'Saturday' })
+      .expect(201);
+    expect(res.body).toMatchObject({ patientName: 'Sam Lee', service: 'Whitening', preferredTime: 'Saturday', status: 'pending' });
+
+    const list = await request(app.getHttpServer()).get('/v1/bookings').set('Authorization', `Bearer ${token}`).expect(200);
+    expect(list.body.items[0]).toMatchObject({ id: res.body.id, conversationId: null, notes: 'From the website form' });
+
+    await request(app.getHttpServer())
+      .post('/v1/public/bookings')
+      .send({ widgetKey, patientName: 'Sam Lee', phone: 'call me maybe', preferredTime: 'Saturday' })
+      .expect(400);
+    await request(app.getHttpServer())
+      .post('/v1/public/bookings')
+      .send({ widgetKey: 'pk_demo_does_not_exist', patientName: 'Sam Lee', phone: '5551234567', preferredTime: 'Saturday' })
+      .expect(404);
+  });
 });

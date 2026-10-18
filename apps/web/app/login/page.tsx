@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { fieldClass } from '@/components/admin/ui';
-import { ArcDecoration, SmileMark, Wordmark } from '@/components/brand';
+import { Accent, SmileMark, Wordmark } from '@/components/brand';
 
 function LoginForm() {
   const router = useRouter();
@@ -73,7 +73,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="h-[52px] w-full rounded-full bg-ocean-600 font-bold text-white shadow-[0_8px_20px_-6px_rgba(10,102,240,0.55)] transition-colors hover:bg-ocean-700 disabled:opacity-60"
+        className="h-[52px] w-full rounded-full bg-azure-600 font-bold text-white shadow-glow-sm transition-colors hover:bg-azure-700 disabled:opacity-60"
       >
         {pending ? 'Signing in…' : 'Sign in'}
       </button>
@@ -83,14 +83,30 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-ocean-50 px-5 py-10">
-      <ArcDecoration className="-top-40 -right-40 size-[620px]" stroke="#DCEAFF" width={26} />
-      <div className="relative w-full max-w-[420px] rounded-[28px] bg-white p-[clamp(24px,5vw,40px)] shadow-overlay">
+    <main
+      className="relative grid min-h-dvh place-items-center overflow-hidden bg-night-950 px-5 py-10"
+      style={{
+        backgroundImage:
+          'radial-gradient(820px circle at 88% 8%, rgba(51,85,255,0.5), transparent 60%), radial-gradient(640px circle at 4% 96%, rgba(47,224,200,0.2), transparent 60%)',
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+          backgroundSize: '56px 56px',
+        }}
+      />
+      <div className="relative w-full max-w-[420px] rounded-[30px] bg-white p-[clamp(24px,5vw,40px)] shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_40px_100px_-24px_rgba(0,0,0,0.6),0_0_80px_-20px_rgba(51,85,255,0.6)]">
         <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
           <SmileMark size={36} />
           <Wordmark className="text-[22px]" />
         </Link>
-        <h1 className="mt-7 font-display text-[32px] leading-[1.1] font-extrabold tracking-[-0.03em]">Sign in to the staff dashboard</h1>
+        <h1 className="mt-7 text-[32px] leading-[1.1] font-bold tracking-[-0.04em]">
+          Sign in to the <Accent>staff dashboard</Accent>
+        </h1>
         <p className="mt-2 text-ink-700">Review conversations, confirm appointment requests and manage what Sunny knows.</p>
         <Suspense>
           <LoginForm />

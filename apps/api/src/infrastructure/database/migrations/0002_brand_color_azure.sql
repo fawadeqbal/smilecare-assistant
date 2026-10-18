@@ -1,0 +1,1 @@
+ALTER TABLE "businesses" ALTER COLUMN "brand_color" SET DEFAULT '#3355FF';

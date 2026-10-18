@@ -53,7 +53,7 @@ function BookingsTable() {
         />
         <a
           href="/api/backend/bookings/export.csv"
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-ocean-50 px-5 text-[15px] font-bold text-ocean-700 no-underline hover:bg-ocean-100"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-azure-50 px-5 text-[15px] font-bold text-azure-700 no-underline hover:bg-azure-100"
         >
           <UploadIcon size={18} className="rotate-180" />
           Download CSV
@@ -82,7 +82,7 @@ function BookingsTable() {
                 </thead>
                 <tbody className="divide-y divide-line">
                   {q.data.items.map((b) => (
-                    <tr key={b.id} className="align-top hover:bg-cloud/60">
+                    <tr key={b.id} className="align-top hover:bg-pearl/60">
                       <td className="px-5 py-4">
                         <p className="font-bold">{b.patientName}</p>
                         <a href={`tel:${b.phone}`}>{b.phone}</a>
@@ -90,7 +90,7 @@ function BookingsTable() {
                       </td>
                       <td className="px-5 py-4">
                         {b.service && (
-                          <span className="rounded-full bg-ocean-50 px-2 py-0.5 text-xs font-bold text-ocean-700 first-letter:uppercase">{b.service}</span>
+                          <span className="rounded-full bg-azure-50 px-2 py-0.5 text-xs font-bold text-azure-700 first-letter:uppercase">{b.service}</span>
                         )}
                         <p className="mt-1 text-sm text-ink-700">{b.preferredTime ?? 'No time given'}</p>
                         {b.notes && <p className="mt-1 text-sm text-ink-500 italic">“{b.notes}”</p>}
@@ -133,7 +133,7 @@ function BookingsTable() {
                             type="button"
                             disabled={update.isPending}
                             onClick={() => update.mutate({ id: b.id, status: 'pending' })}
-                            className="h-10 px-1 text-sm font-bold text-ocean-600 hover:text-ocean-700"
+                            className="h-10 px-1 text-sm font-bold text-azure-600 hover:text-azure-700"
                           >
                             Move back to “to confirm”
                           </button>

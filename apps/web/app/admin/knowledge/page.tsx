@@ -51,7 +51,7 @@ export default function KnowledgePage() {
             <ul className="divide-y divide-line">
               {docs.data.items.map((d) => (
                 <li key={d.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
-                  <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-cloud text-ocean-600">
+                  <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-pearl text-azure-600">
                     <FileIcon size={19} />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ function UploadForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => 
             type="file"
             required
             accept=".pdf,.md,.markdown,.txt,application/pdf,text/plain,text/markdown"
-            className="mt-1.5 block w-full text-sm file:mr-3 file:h-10 file:rounded-full file:border-0 file:bg-ocean-50 file:px-4 file:font-bold file:text-ocean-700"
+            className="mt-1.5 block w-full text-sm file:mr-3 file:h-10 file:rounded-full file:border-0 file:bg-azure-50 file:px-4 file:font-bold file:text-azure-700"
           />
         </label>
         <label className="block min-w-60 flex-1">
@@ -202,7 +202,7 @@ function SearchTester() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Do you take Cigna?"
           aria-label="Question to test"
-          className="h-11 min-w-0 flex-1 rounded-full border-[1.5px] border-line-strong px-4 outline-none focus:border-ocean-600"
+          className="h-11 min-w-0 flex-1 rounded-full border-[1.5px] border-line-strong px-4 outline-none focus:border-azure-600"
         />
         <Button type="submit" disabled={search.isPending || !query.trim()}>
           Test
@@ -213,7 +213,7 @@ function SearchTester() {
         <ol className="mt-4 space-y-3">
           {search.data.length === 0 && <li className="text-sm text-ink-500">No matching sections. Add a document that answers this.</li>}
           {search.data.map((hit) => (
-            <li key={hit.chunkId} className="rounded-2xl bg-cloud p-3.5">
+            <li key={hit.chunkId} className="rounded-2xl bg-pearl p-3.5">
               <div className="flex items-center justify-between gap-2 text-sm">
                 <span className="font-bold">{hit.documentTitle}</span>
                 <span className="tabular-nums text-ink-500">{Math.round(hit.score * 100)}% match</span>

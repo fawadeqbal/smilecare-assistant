@@ -20,12 +20,12 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const buttonStyles = {
-  primary: 'bg-ocean-600 text-white hover:bg-ocean-700',
-  secondary: 'bg-white text-ink border-[1.5px] border-line-strong hover:border-ocean-300',
-  tonal: 'bg-ocean-50 text-ocean-700 hover:bg-ocean-100',
+  primary: 'bg-azure-600 text-white shadow-glow-sm hover:bg-azure-700 disabled:shadow-none',
+  secondary: 'bg-white text-ink border-[1.5px] border-line-strong hover:border-night-900',
+  tonal: 'bg-azure-50 text-azure-700 hover:bg-azure-100',
   danger: 'bg-white text-danger-ink border-[1.5px] border-danger-bg hover:bg-danger-bg',
-  ghost: 'text-ink-700 hover:bg-cloud hover:text-ink',
-  dark: 'bg-ink text-white hover:bg-ink-700',
+  ghost: 'text-ink-700 hover:bg-pearl hover:text-ink',
+  dark: 'bg-night-900 text-white hover:bg-night-800',
 };
 
 export function Button({ variant = 'primary', size = 'md', className = '', ...props }: ButtonProps) {
@@ -57,11 +57,11 @@ export function PanelHeader({ title, badge, action }: { title: string; badge?: R
 
 const tone = {
   green: 'bg-success-bg text-success-ink',
-  amber: 'bg-warning-bg text-warning-ink',
-  coral: 'bg-handoff-bg text-handoff-ink',
+  warning: 'bg-warning-bg text-warning-ink',
+  amber: 'bg-amber-bg text-amber-ink',
   red: 'bg-danger-bg text-danger-ink',
-  ocean: 'bg-ocean-50 text-ocean-700',
-  grey: 'bg-cloud text-ink-500',
+  azure: 'bg-azure-50 text-azure-700',
+  grey: 'bg-pearl text-ink-500',
 };
 
 export function Badge({ color, children, dot = false }: { color: keyof typeof tone; children: React.ReactNode; dot?: boolean }) {
@@ -74,17 +74,17 @@ export function Badge({ color, children, dot = false }: { color: keyof typeof to
 }
 
 export function ConversationBadge({ status }: { status: ConversationStatus }) {
-  const map = { open: ['ocean', 'Open'], handed_off: ['coral', 'Needs a person'], closed: ['grey', 'Resolved'] } as const;
+  const map = { open: ['azure', 'Open'], handed_off: ['amber', 'Needs a person'], closed: ['grey', 'Resolved'] } as const;
   return <Badge color={map[status][0]}>{map[status][1]}</Badge>;
 }
 
 export function BookingBadge({ status }: { status: BookingStatus }) {
-  const map = { pending: ['amber', 'To confirm'], confirmed: ['green', 'Confirmed'], cancelled: ['red', 'Cancelled'] } as const;
+  const map = { pending: ['warning', 'To confirm'], confirmed: ['green', 'Confirmed'], cancelled: ['red', 'Cancelled'] } as const;
   return <Badge color={map[status][0]}>{map[status][1]}</Badge>;
 }
 
 export function DocumentBadge({ status }: { status: DocumentStatus }) {
-  const map = { queued: ['grey', 'Queued'], processing: ['ocean', 'Indexing'], ready: ['green', 'Ready'], failed: ['red', 'Failed'] } as const;
+  const map = { queued: ['grey', 'Queued'], processing: ['azure', 'Indexing'], ready: ['green', 'Ready'], failed: ['red', 'Failed'] } as const;
   return <Badge color={map[status][0]}>{map[status][1]}</Badge>;
 }
 
@@ -109,7 +109,7 @@ export function Skeleton({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-3 p-6" aria-busy="true" aria-label="Loading">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="h-5 animate-pulse rounded-full bg-cloud" style={{ width: `${90 - i * 12}%` }} />
+        <div key={i} className="h-5 animate-pulse rounded-full bg-pearl" style={{ width: `${90 - i * 12}%` }} />
       ))}
     </div>
   );
@@ -135,7 +135,7 @@ export function FilterPills<T extends string>({
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={`h-9 rounded-full px-4 text-sm font-bold transition-colors ${
-            value === o.value ? 'bg-ocean-600 text-white' : 'text-ink-500 hover:text-ink'
+            value === o.value ? 'bg-night-900 text-white' : 'text-ink-500 hover:text-ink'
           }`}
         >
           {o.label}
@@ -166,6 +166,6 @@ export function Pager({ page, pageSize, total, onPage }: { page: number; pageSiz
 }
 
 export const fieldClass =
-  'mt-1.5 h-[52px] w-full rounded-[14px] border-[1.5px] border-line-strong bg-white px-4 text-base text-ink outline-none transition-shadow focus:border-ocean-600 focus:shadow-[0_0_0_4px_var(--color-ocean-100)]';
+  'mt-1.5 h-[52px] w-full rounded-[14px] border-[1.5px] border-line-strong bg-white px-4 text-base text-ink outline-none transition-shadow focus:border-azure-600 focus:shadow-[0_0_0_4px_var(--color-azure-100)]';
 export const textareaClass =
-  'mt-1.5 w-full rounded-[14px] border-[1.5px] border-line-strong bg-white px-4 py-3 text-base text-ink outline-none transition-shadow focus:border-ocean-600 focus:shadow-[0_0_0_4px_var(--color-ocean-100)]';
+  'mt-1.5 w-full rounded-[14px] border-[1.5px] border-line-strong bg-white px-4 py-3 text-base text-ink outline-none transition-shadow focus:border-azure-600 focus:shadow-[0_0_0_4px_var(--color-azure-100)]';

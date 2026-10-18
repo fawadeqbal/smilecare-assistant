@@ -50,7 +50,7 @@ export default function SettingsPage() {
   const set = <K extends keyof BusinessSettings>(key: K, value: BusinessSettings[K]) => setForm({ ...form, [key]: value });
   const snippet = installSnippet(form.widgetKey);
   const validColor = /^#[0-9a-f]{6}$/i.test(form.brandColor);
-  const brand = validColor ? form.brandColor : '#0A66F0';
+  const brand = validColor ? form.brandColor : '#3355FF';
 
   return (
     <>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                     aria-label="Pick brand color"
                   />
                   <input
-                    className="h-[52px] w-32 rounded-[14px] border-[1.5px] border-line-strong px-3 font-mono text-sm outline-none focus:border-ocean-600"
+                    className="h-[52px] w-32 rounded-[14px] border-[1.5px] border-line-strong px-3 font-mono text-sm outline-none focus:border-azure-600"
                     value={form.brandColor}
                     onChange={(e) => set('brandColor', e.target.value)}
                     pattern="#[0-9a-fA-F]{6}"
@@ -148,7 +148,7 @@ export default function SettingsPage() {
             </div>
             {save.error && <ErrorNote error={save.error} />}
             <div className="flex items-center gap-3">
-              <Button type="submit" disabled={save.isPending} className="h-[52px] px-[26px] text-base shadow-[0_8px_20px_-6px_rgba(10,102,240,0.55)]">
+              <Button type="submit" disabled={save.isPending} className="h-[52px] px-[26px] text-base shadow-[0_8px_20px_-6px_rgba(51,85,255,0.55)]">
                 {save.isPending ? 'Saving…' : 'Save settings'}
               </Button>
               {saved && (
@@ -165,22 +165,26 @@ export default function SettingsPage() {
           <Panel className="p-5">
             <h2 className="font-display text-xl font-bold">Preview</h2>
             <div className="mt-4 overflow-hidden rounded-3xl shadow-overlay">
-              <div className="relative flex items-center gap-3 overflow-hidden px-4 py-3.5 text-white" style={{ background: brand }}>
-                <svg aria-hidden="true" className="absolute -top-10 -right-6 size-36 opacity-50" viewBox="0 0 200 200">
-                  <path d="M30 80 Q100 170 170 80" stroke="#ffffff" strokeOpacity=".35" strokeWidth="22" fill="none" strokeLinecap="round" />
-                </svg>
-                <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true" className="relative">
-                  <circle cx="20" cy="20" r="20" fill="#FFFFFF" />
-                  <path d="M11 19 Q20 29 29 19" stroke={brand} strokeWidth="3.6" fill="none" strokeLinecap="round" />
-                  <circle cx="29" cy="11" r="3.2" fill="#FF8A65" />
-                </svg>
+              <div
+                className="relative flex items-center gap-3 overflow-hidden bg-night-950 px-4 py-3.5 text-white"
+                style={{ backgroundImage: `radial-gradient(240px circle at 100% 0%, color-mix(in srgb, ${brand} 70%, transparent), transparent 70%)` }}
+              >
+                <span className="relative">
+                  <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+                    <circle cx="20" cy="20" r="20" fill="#FFFFFF" />
+                    <path d="M11 19 Q20 29 29 19" stroke={brand} strokeWidth="3.6" fill="none" strokeLinecap="round" />
+                    <circle cx="14" cy="13.5" r="2" fill={brand} />
+                    <circle cx="26" cy="13.5" r="2" fill={brand} />
+                  </svg>
+                  <span className="absolute -right-0.5 -bottom-0.5 size-3 rounded-full border-2 border-night-950 bg-aqua-400" />
+                </span>
                 <div className="relative">
                   <p className="font-display text-[17px] leading-tight font-bold">{form.botName}</p>
-                  <p className="text-xs opacity-85">{form.businessName} · replies instantly</p>
+                  <p className="text-xs text-haze">{form.businessName} · replies instantly</p>
                 </div>
               </div>
-              <div className="flex flex-col gap-3 bg-cloud p-4">
-                <p className="max-w-[92%] rounded-[18px_18px_18px_6px] bg-white px-3.5 py-2.5 text-[15px] shadow-rest">{form.welcomeMessage}</p>
+              <div className="flex flex-col gap-3 bg-pearl p-4">
+                <p className="max-w-[92%] rounded-[20px_20px_20px_6px] bg-white px-3.5 py-2.5 text-[15px] shadow-rest">{form.welcomeMessage}</p>
                 <div className="flex flex-wrap gap-2">
                   {form.suggestedQuestions.filter(Boolean).map((s) => (
                     <span
@@ -199,7 +203,7 @@ export default function SettingsPage() {
           <Panel className="p-5">
             <h2 className="font-display text-xl font-bold">Add {form.botName} to a website</h2>
             <p className="mt-1 text-sm text-ink-500">Paste this just before the closing &lt;/body&gt; tag on every page.</p>
-            <pre className="mt-3 rounded-2xl bg-ink p-3.5 text-[13px] leading-relaxed break-all whitespace-pre-wrap text-ocean-100">{snippet}</pre>
+            <pre className="mt-3 rounded-2xl bg-ink p-3.5 text-[13px] leading-relaxed break-all whitespace-pre-wrap text-azure-100">{snippet}</pre>
             <Button
               variant="tonal"
               className="mt-3"

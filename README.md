@@ -9,11 +9,11 @@ An AI customer-support assistant for small businesses, shown here for a fictiona
 ## What it does
 
 - **Answers from the business's documents (RAG).** Every visitor question is embedded, matched against the knowledge base with pgvector, and Claude answers using only the retrieved sections. The dashboard shows which documents each answer came from.
-- **Books appointments by conversation.** Claude collects name, phone and preferred time, confirms the details, then calls a `create_booking` tool. Staff get an email and see the request in the dashboard.
+- **Books appointments by conversation.** Claude collects name, phone and preferred time, confirms the details, then calls a `create_booking` tool. Staff get an email and see the request in the dashboard. The clinic site's own "Request a visit" form posts to the same pipeline (`POST /v1/public/bookings`).
 - **Hands off to a person.** When the visitor asks for a human, is unhappy, or asks something the documents don't cover, Claude calls `request_human_handoff`. The conversation is flagged and the transcript is emailed to staff.
 - **Streams replies** token by token over Server-Sent Events.
-- **One-line install.** The widget is a 17 KB script that runs in a Shadow DOM, so the host site's CSS can't break it. It remembers the conversation across page loads.
-- **Bright & friendly design system:** ocean blue for trust, coral for delight, Gabarito and Figtree type, soft rounded shapes. It's shared by the clinic site, the widget (themed from each business's brand color) and the dashboard.
+- **One-line install.** The widget is a ~24 KB script that runs in a Shadow DOM, so the host site's CSS can't break it. It remembers the conversation across page loads.
+- **"Night & Glow" design system (3.0):** deep night surfaces, one confident azure for every action, an aqua glow used sparingly, Onest with Instrument Serif italic accents. It's shared by the clinic site, the widget (themed from each business's brand color) and the dashboard.
 - **Staff dashboard:** a morning overview (weekly KPIs with trends, an interactive 7/14/30-day activity chart, how many chats Sunny resolved alone, who is waiting for a person, requests to confirm, what visitors ask about most), conversation transcripts, appointment requests (confirm, cancel, CSV export), knowledge base (upload PDF/Markdown/text, re-index, test a question), and assistant settings with a live preview and the install snippet.
 - **Multi-tenant.** Every row belongs to a business and every query is scoped by it, so one deployment can serve many clients, each with its own widget key.
 

@@ -13,7 +13,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppConfig } from './config/app-config.service';
 
 /** Paths that browsers on any client website may call (the widget). */
-const PUBLIC_WIDGET_PATHS = [/^\/v1\/chat\//, /^\/v1\/widget\//, /^\/widget\.js$/];
+const PUBLIC_WIDGET_PATHS = [/^\/v1\/chat\//, /^\/v1\/public\//, /^\/v1\/widget\//, /^\/widget\.js$/];
 
 export async function createApp() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });

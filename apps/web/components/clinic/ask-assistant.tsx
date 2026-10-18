@@ -34,7 +34,7 @@ export function AskSunnyBox({ id, examples }: { id: string; examples?: string[] 
   return (
     <div className="flex max-w-[520px] flex-col gap-3">
       <form
-        className="flex items-center gap-2 rounded-full border-[1.5px] border-line bg-white py-1.5 pr-1.5 pl-5 shadow-[0_12px_28px_-10px_rgba(10,102,240,0.3)] focus-within:border-ocean-300"
+        className="flex items-center gap-2 rounded-full border-[1.5px] border-line bg-white py-1.5 pr-1.5 pl-5 shadow-[0_12px_28px_-10px_rgba(51,85,255,0.3)] focus-within:border-azure-300"
         onSubmit={(e) => {
           e.preventDefault();
           ask(question);
@@ -54,7 +54,7 @@ export function AskSunnyBox({ id, examples }: { id: string; examples?: string[] 
         <button
           type="submit"
           disabled={!ready || !question.trim()}
-          className="h-[46px] rounded-full bg-ocean-600 px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ocean-700 disabled:opacity-60"
+          className="h-[46px] rounded-full bg-azure-600 px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-azure-700 disabled:opacity-60"
         >
           Ask Sunny
         </button>
@@ -67,7 +67,7 @@ export function AskSunnyBox({ id, examples }: { id: string; examples?: string[] 
               type="button"
               disabled={!ready}
               onClick={() => ask(q)}
-              className="h-11 rounded-full border-[1.5px] border-ocean-200 bg-white px-4 text-[15px] font-semibold text-ocean-700 transition-colors hover:bg-ocean-50 disabled:opacity-60"
+              className="h-11 rounded-full border-[1.5px] border-azure-200 bg-white px-4 text-[15px] font-semibold text-azure-700 transition-colors hover:bg-azure-50 disabled:opacity-60"
             >
               {q}
             </button>

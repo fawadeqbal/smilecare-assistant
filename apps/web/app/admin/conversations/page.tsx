@@ -54,10 +54,10 @@ function ConversationsList() {
             <ul className="divide-y divide-line">
               {q.data.items.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/admin/conversations/${c.id}`} className="flex items-center gap-4 px-5 py-4 text-ink no-underline hover:bg-cloud">
+                  <Link href={`/admin/conversations/${c.id}`} className="flex items-center gap-4 px-5 py-4 text-ink no-underline hover:bg-pearl">
                     <span
                       className={`flex size-10 flex-none items-center justify-center rounded-full ${
-                        c.status === 'handed_off' ? 'bg-coral-100 text-handoff-ink' : 'bg-ocean-50 text-ocean-600'
+                        c.status === 'handed_off' ? 'bg-amber-bg text-amber-ink' : 'bg-azure-50 text-azure-600'
                       }`}
                     >
                       <UserIcon size={18} />

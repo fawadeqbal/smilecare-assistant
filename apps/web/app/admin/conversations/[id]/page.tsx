@@ -57,8 +57,8 @@ export default function ConversationPage() {
       {setStatus.error && <ErrorNote error={setStatus.error} />}
 
       {c?.status === 'handed_off' && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-[20px] bg-coral-50 px-5 py-4">
-          <span className="flex size-10 flex-none items-center justify-center rounded-full bg-coral-100 text-handoff-ink">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-[20px] bg-amber-bg px-5 py-4">
+          <span className="flex size-10 flex-none items-center justify-center rounded-full bg-amber-bg text-amber-ink">
             <UserIcon size={18} />
           </span>
           <div className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ export default function ConversationPage() {
                 m.role === 'user' ? (
                   <li key={m.id} className="flex flex-col items-end gap-1">
                     <span className="text-xs text-ink-500">Visitor · {dateTime(m.createdAt)}</span>
-                    <p className="max-w-[80%] rounded-[20px_20px_6px_20px] bg-ocean-600 px-4 py-3 whitespace-pre-wrap text-white">{m.content}</p>
+                    <p className="max-w-[80%] rounded-[20px_20px_6px_20px] bg-azure-600 px-4 py-3 whitespace-pre-wrap text-white">{m.content}</p>
                   </li>
                 ) : (
                   <li key={m.id} className="flex flex-col gap-1">

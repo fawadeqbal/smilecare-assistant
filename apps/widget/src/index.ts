@@ -9,7 +9,8 @@ import { ChatWidget } from './widget';
  *   data-api-url   API origin (defaults to the origin the script was loaded from)
  *   data-position  "right" (default) or "left"
  *   data-open      "true" to open the chat on page load
- *   data-fonts     "system" to skip loading the brand fonts from Google Fonts
+ *   data-fonts     "system" to skip loading the brand font (Onest) from Google Fonts
+ *   data-greeting  "off" to hide the greeting bubble shown next to the launcher
  *
  * Programmatic control: window.SmileCareWidget.open() / .close() / .toggle() / .ask(question)
  * A `smilecare:ready` event fires on window once the API is available.
@@ -38,6 +39,7 @@ function init() {
     position: script.dataset.position === 'left' ? 'left' : 'right',
     openOnLoad: script.dataset.open === 'true',
     brandFonts: script.dataset.fonts !== 'system',
+    greeting: script.dataset.greeting !== 'off',
   });
   window.SmileCareWidget = {
     open: () => widget.open(),

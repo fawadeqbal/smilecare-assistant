@@ -65,11 +65,11 @@ export default function OverviewPage() {
             <div className="flex flex-col gap-2.5">
               <h2 className="font-display text-xl font-bold tracking-[-0.01em]">Activity</h2>
               <div className="flex flex-wrap gap-[22px]">
-                <Legend color="bg-ocean-600" label="Conversations" value={s?.daily.reduce((n, d) => n + d.conversations, 0)} />
-                <Legend color="bg-coral-400" label="Appointment requests" value={s?.daily.reduce((n, d) => n + d.bookings, 0)} />
+                <Legend color="bg-azure-600" label="Conversations" value={s?.daily.reduce((n, d) => n + d.conversations, 0)} />
+                <Legend color="bg-aqua-500" label="Appointment requests" value={s?.daily.reduce((n, d) => n + d.bookings, 0)} />
               </div>
             </div>
-            <div role="group" aria-label="Date range" className="flex gap-1 rounded-full bg-cloud p-1">
+            <div role="group" aria-label="Date range" className="flex gap-1 rounded-full bg-pearl p-1">
               {RANGES.map((r) => (
                 <button
                   key={r}
@@ -77,7 +77,7 @@ export default function OverviewPage() {
                   aria-pressed={range === r}
                   onClick={() => setRange(r)}
                   className={`h-9 rounded-full px-3.5 text-sm font-bold transition-colors ${
-                    range === r ? 'bg-white text-ink shadow-[0_1px_3px_rgba(11,27,46,0.14)]' : 'text-ink-500 hover:text-ink'
+                    range === r ? 'bg-white text-ink shadow-[0_1px_3px_rgba(11,16,32,0.14)]' : 'text-ink-500 hover:text-ink'
                   }`}
                 >
                   {r} days
@@ -152,7 +152,7 @@ function Kpis({ stats: s }: { stats?: OverviewStats }) {
       badge: s ? delta(s.week.conversations, s.week.conversationsPrev) : '',
       note: 'vs last week',
       badgeClass: 'bg-success-bg text-success-ink',
-      tile: 'bg-ocean-50 text-ocean-600',
+      tile: 'bg-azure-50 text-azure-600',
       icon: ChatIcon,
       alert: false,
     },
@@ -165,7 +165,7 @@ function Kpis({ stats: s }: { stats?: OverviewStats }) {
       badge: s ? delta(s.week.bookings, s.week.bookingsPrev) : '',
       note: 'vs last week',
       badgeClass: 'bg-success-bg text-success-ink',
-      tile: 'bg-coral-50 text-coral-600',
+      tile: 'bg-aqua-50 text-aqua-700',
       icon: CalendarIcon,
       alert: false,
     },
@@ -176,8 +176,8 @@ function Kpis({ stats: s }: { stats?: OverviewStats }) {
       suffix: '',
       badge: longest ? `Longest ${longest}` : 'Nobody waiting',
       note: '',
-      badgeClass: longest ? 'bg-handoff-bg text-handoff-ink' : 'bg-success-bg text-success-ink',
-      tile: 'bg-handoff-bg text-handoff-ink',
+      badgeClass: longest ? 'bg-amber-bg text-amber-ink' : 'bg-success-bg text-success-ink',
+      tile: 'bg-amber-bg text-amber-ink',
       icon: UserIcon,
       alert: !!s?.waiting.count,
     },
@@ -202,7 +202,7 @@ function Kpis({ stats: s }: { stats?: OverviewStats }) {
           key={k.label}
           href={k.href}
           className={`flex flex-col gap-2.5 rounded-[22px] border-2 bg-white px-5 pt-5 pb-4 text-ink no-underline shadow-rest transition-shadow hover:shadow-raised ${
-            k.alert ? 'border-coral-200' : 'border-white'
+            k.alert ? 'border-amber' : 'border-white'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
@@ -247,27 +247,33 @@ function SunnyWeek({ stats: s }: { stats?: OverviewStats }) {
   const circumference = 2 * Math.PI * 32;
 
   return (
-    <section className="relative flex min-w-0 flex-[1_1_300px] flex-col gap-[18px] overflow-hidden rounded-3xl bg-ocean-600 p-6 text-white">
-      <ArcDecoration className="-right-16 -bottom-24 size-[300px]" stroke="#2F7BFF" width={20} spark />
+    <section
+      className="relative flex min-w-0 flex-[1_1_300px] flex-col gap-[18px] overflow-hidden rounded-3xl bg-night-950 p-6 text-white"
+      style={{
+        backgroundImage:
+          'radial-gradient(360px circle at 100% 0%, rgba(51,85,255,0.6), transparent 70%), radial-gradient(260px circle at 0% 100%, rgba(47,224,200,0.18), transparent 70%)',
+      }}
+    >
+      <ArcDecoration className="-right-[60px] -bottom-[90px] size-[300px]" stroke="#1B2340" width={20} spark />
       <div className="relative flex items-center gap-2.5">
         <SunnyAvatar size={36} light />
         <h2 className="font-display text-xl font-bold">Sunny this week</h2>
       </div>
       <div className="relative flex items-center gap-[18px]">
         <svg width="96" height="96" viewBox="0 0 80 80" role="img" aria-label={`${pct} percent answered without staff`}>
-          <circle cx="40" cy="40" r="32" fill="none" stroke="#2F7BFF" strokeWidth="9" />
+          <circle cx="40" cy="40" r="32" fill="none" stroke="#262E48" strokeWidth="9" />
           <circle
             cx="40"
             cy="40"
             r="32"
             fill="none"
-            stroke="#FFFFFF"
+            stroke="#2FE0C8"
             strokeWidth="9"
             strokeLinecap="round"
             strokeDasharray={`${((pct / 100) * circumference).toFixed(1)} ${circumference.toFixed(1)}`}
             transform="rotate(-90 40 40)"
           />
-          <text x="40" y="45" textAnchor="middle" fill="#FFFFFF" fontFamily="var(--font-gabarito)" fontWeight="800" fontSize="17">
+          <text x="40" y="45" textAnchor="middle" fill="#FFFFFF" fontFamily="var(--font-onest)" fontWeight="800" fontSize="17">
             {s ? `${pct}%` : '–'}
           </text>
         </svg>
@@ -275,20 +281,20 @@ function SunnyWeek({ stats: s }: { stats?: OverviewStats }) {
           <span className="font-display text-[22px] leading-[1.2] font-bold">
             {resolved} of {total} chats
           </span>
-          <span className="text-sm text-ocean-100">answered without needing staff</span>
+          <span className="text-sm text-haze-200">answered without needing staff</span>
         </div>
       </div>
       <div className="relative grid grid-cols-2 gap-2.5">
         <div className="flex flex-col rounded-2xl bg-white/12 px-3.5 py-3">
           <span className="font-display text-2xl font-bold tabular-nums">{s?.week.visitorMessages ?? '–'}</span>
-          <span className="text-[13px] text-ocean-100">questions answered</span>
+          <span className="text-[13px] text-haze-200">questions answered</span>
         </div>
         <div className="flex flex-col rounded-2xl bg-white/12 px-3.5 py-3">
           <span className="font-display text-2xl font-bold tabular-nums">{s?.week.bookings ?? '–'}</span>
-          <span className="text-[13px] text-ocean-100">appointments requested</span>
+          <span className="text-[13px] text-haze-200">appointments requested</span>
         </div>
       </div>
-      <Link href="/admin/conversations" className="relative mt-auto self-start font-bold text-white underline-offset-4 hover:text-ocean-100">
+      <Link href="/admin/conversations" className="relative mt-auto self-start font-bold text-white underline-offset-4 hover:text-aqua-200">
         Read this week&apos;s transcripts
       </Link>
     </section>
@@ -315,7 +321,7 @@ function WaitingQueue({
     <Panel className="flex flex-col">
       <PanelHeader
         title="Waiting for a person"
-        badge={!!total && <span className="rounded-full bg-handoff-bg px-2 text-xs font-bold text-handoff-ink">{total}</span>}
+        badge={!!total && <span className="rounded-full bg-amber-bg px-2 text-xs font-bold text-amber-ink">{total}</span>}
         action={
           <Link href="/admin/conversations?status=handed_off" className="text-sm font-bold">
             See all
@@ -337,7 +343,7 @@ function WaitingQueue({
             return (
               <article key={c.id} className="flex flex-col gap-3 rounded-[18px] border border-line p-3.5">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 flex-none items-center justify-center rounded-full bg-coral-100 text-sm font-bold text-handoff-ink">
+                  <span className="flex size-10 flex-none items-center justify-center rounded-full bg-amber-bg text-sm font-bold text-amber-ink">
                     <UserIcon size={18} />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col leading-[1.35]">
@@ -346,7 +352,7 @@ function WaitingQueue({
                   </div>
                   <span
                     className={`flex flex-none items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                      old ? 'bg-handoff-bg text-handoff-ink' : 'bg-warning-bg text-warning-ink'
+                      old ? 'bg-amber-bg text-amber-ink' : 'bg-warning-bg text-warning-ink'
                     }`}
                   >
                     <ClockIcon size={13} strokeWidth={2.4} />
@@ -354,12 +360,12 @@ function WaitingQueue({
                   </span>
                 </div>
                 {c.lastVisitorMessage && (
-                  <p className="rounded-[4px_14px_14px_14px] bg-cloud px-3 py-2.5 text-sm text-[#24364D]">“{c.lastVisitorMessage}”</p>
+                  <p className="rounded-[4px_14px_14px_14px] bg-pearl px-3 py-2.5 text-sm text-ink-700">“{c.lastVisitorMessage}”</p>
                 )}
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/admin/conversations/${c.id}`}
-                    className="inline-flex h-10 items-center rounded-full bg-ocean-600 px-4 text-sm font-bold text-white no-underline hover:bg-ocean-700 hover:text-white"
+                    className="inline-flex h-10 items-center rounded-full bg-azure-600 px-4 text-sm font-bold text-white no-underline hover:bg-azure-700 hover:text-white"
                   >
                     Open conversation
                   </Link>
@@ -385,7 +391,7 @@ function dayTile(preferred: string | null): { day: string; part: string } {
   const t = (preferred ?? '').toLowerCase();
   const day = DAYS.find((d) => t.includes(d) || new RegExp(`\\b${d.slice(0, 3)}\\b`).test(t));
   const part = /morning|\bam\b|a\.m\./.test(t) ? 'AM' : /afternoon|evening|\bpm\b|p\.m\.|after \d/.test(t) ? 'PM' : '';
-  const label = day ? day.slice(0, 3) : t.includes('tomorrow') ? 'Tmrw' : t.includes('today') ? 'Today' : 'Any';
+  const label = day ? day.slice(0, 3) : t.includes('weekday') ? 'Wkdy' : t.includes('tomorrow') ? 'Tmrw' : t.includes('today') ? 'Today' : 'Any';
   return { day: label, part: part || '·' };
 }
 
@@ -429,10 +435,10 @@ function RequestsQueue({
             const tile = dayTile(b.preferredTime);
             const cancelled = b.status === 'cancelled';
             return (
-              <div key={b.id} className="flex flex-wrap items-center gap-3 rounded-2xl px-2.5 py-3 hover:bg-cloud">
+              <div key={b.id} className="flex flex-wrap items-center gap-3 rounded-2xl px-2.5 py-3 hover:bg-pearl">
                 <div
                   className={`flex h-14 w-[52px] flex-none flex-col items-center justify-center rounded-[14px] leading-[1.1] ${
-                    cancelled ? 'bg-[#F1F5F9] text-ink-400' : 'bg-ocean-50 text-ocean-700'
+                    cancelled ? 'bg-mist text-ink-400' : 'bg-azure-50 text-azure-700'
                   }`}
                   aria-hidden="true"
                 >
@@ -442,7 +448,7 @@ function RequestsQueue({
                 <div className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
                   <span className="flex flex-wrap items-center gap-2">
                     <strong>{b.patientName}</strong>
-                    {b.service && <span className="rounded-full bg-ocean-50 px-2 text-xs font-bold text-ocean-700 first-letter:uppercase">{b.service}</span>}
+                    {b.service && <span className="rounded-full bg-azure-50 px-2 text-xs font-bold text-azure-700 first-letter:uppercase">{b.service}</span>}
                   </span>
                   <span className="text-[13px] text-ink-500">
                     {b.preferredTime ?? 'No time given'} · {b.phone} · {timeAgo(b.createdAt)}
@@ -477,7 +483,7 @@ function RequestsQueue({
                       type="button"
                       disabled={update.isPending}
                       onClick={() => update.mutate({ id: b.id, status: 'pending' })}
-                      className="h-10 px-1 text-sm font-bold text-ocean-600 hover:text-ocean-700"
+                      className="h-10 px-1 text-sm font-bold text-azure-600 hover:text-azure-700"
                     >
                       Undo
                     </button>
@@ -513,8 +519,8 @@ function TopTopics({ stats: s }: { stats?: OverviewStats }) {
                 <span className="font-semibold">{t.label}</span>
                 <span className="font-bold tabular-nums">{t.count}</span>
               </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-ocean-50">
-                <div className={`h-full rounded-full ${i === 0 ? 'bg-ocean-600' : 'bg-[#5B95F7]'}`} style={{ width: `${(t.count / max) * 100}%` }} />
+              <div className="h-2.5 overflow-hidden rounded-full bg-azure-50">
+                <div className={`h-full rounded-full ${i === 0 ? 'bg-azure-600' : 'bg-[#7A90FF]'}`} style={{ width: `${(t.count / max) * 100}%` }} />
               </div>
             </li>
           ))}
@@ -552,8 +558,8 @@ function KnowledgeCard({ stats: s }: { stats?: OverviewStats }) {
       </div>
       <ul className="flex flex-col">
         {docs.data?.items.map((d) => (
-          <li key={d.id} className="flex items-center gap-3 border-b border-[#EEF2F7] py-2.5">
-            <span className="flex size-[34px] flex-none items-center justify-center rounded-[10px] bg-cloud text-ocean-600">
+          <li key={d.id} className="flex items-center gap-3 border-b border-[#EEF0F6] py-2.5">
+            <span className="flex size-[34px] flex-none items-center justify-center rounded-[10px] bg-pearl text-azure-600">
               <FileIcon size={17} />
             </span>
             <span className="min-w-0 flex-1 truncate text-sm font-semibold" title={d.title}>{d.title}</span>
@@ -569,7 +575,7 @@ function KnowledgeCard({ stats: s }: { stats?: OverviewStats }) {
         )}
       </ul>
       <form
-        className="flex items-center gap-2 rounded-full bg-cloud py-1 pr-1 pl-4"
+        className="flex items-center gap-2 rounded-full bg-pearl py-1 pr-1 pl-4"
         onSubmit={(e) => {
           e.preventDefault();
           if (query.trim()) search.mutate(query);

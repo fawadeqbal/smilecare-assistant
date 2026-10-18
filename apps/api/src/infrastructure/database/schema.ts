@@ -44,7 +44,7 @@ export const businesses = pgTable('businesses', {
   welcomeMessage: text('welcome_message')
     .notNull()
     .default('Hi! I can answer questions about our clinic or help you book an appointment.'),
-  brandColor: text('brand_color').notNull().default('#0A66F0'),
+  brandColor: text('brand_color').notNull().default('#3355FF'),
   suggestedQuestions: jsonb('suggested_questions').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
   handoffEmail: text('handoff_email'),
   notificationEmail: text('notification_email'),

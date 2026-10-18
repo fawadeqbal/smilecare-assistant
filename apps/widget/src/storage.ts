@@ -35,6 +35,9 @@ export function createStore(widgetKey: string) {
     },
     sessionId: () => read(`${prefix}session`),
     setSessionId: (id: string | null) => write(`${prefix}session`, id),
+    /** Whether this visitor has already opened the chat (then the launcher greeting stays hidden). */
+    greeted: () => read(`${prefix}greeted`) === '1',
+    setGreeted: () => write(`${prefix}greeted`, '1'),
   };
 }
 

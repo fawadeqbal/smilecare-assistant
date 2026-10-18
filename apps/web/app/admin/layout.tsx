@@ -34,7 +34,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       label: 'Conversations',
       icon: ChatIcon,
       count: counts.data?.waiting.count,
-      countClass: 'bg-handoff-bg text-handoff-ink',
+      countClass: 'bg-amber-bg text-amber-ink',
       countLabel: 'waiting for a person',
     },
     {
@@ -71,7 +71,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     .toUpperCase();
 
   return (
-    <div className="min-h-dvh bg-cloud lg:grid lg:grid-cols-[280px_1fr]">
+    <div className="min-h-dvh bg-pearl lg:grid lg:grid-cols-[264px_1fr]">
       <aside className="border-b border-line bg-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between px-[22px] py-[22px]">
           <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
@@ -107,7 +107,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 onClick={() => setMenuOpen(false)}
                 aria-current={isActive(href) ? 'page' : undefined}
                 className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] no-underline transition-colors ${
-                  isActive(href) ? 'bg-ocean-50 font-bold text-ocean-700' : 'font-semibold text-ink-700 hover:bg-cloud'
+                  isActive(href) ? 'bg-azure-50 font-bold text-azure-700' : 'font-semibold text-ink-700 hover:bg-pearl'
                 }`}
               >
                 <Icon size={20} />
@@ -123,9 +123,9 @@ function Shell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="relative flex flex-col gap-2.5 overflow-hidden rounded-[18px] bg-ink p-[18px] text-white">
-            <ArcDecoration className="-right-8 -bottom-12 size-[150px]" stroke="#1C3352" />
+            <ArcDecoration className="-right-8 -bottom-12 size-[150px]" stroke="#1B2340" />
             <strong className="relative font-display text-[17px] leading-[1.25]">Put {settings.data?.botName ?? 'Sunny'} on another page</strong>
-            <span className="relative text-[13px] text-[#B7C4D6]">One script tag. Works on any website builder.</span>
+            <span className="relative text-[13px] text-haze">One script tag. Works on any website builder.</span>
             <button
               type="button"
               onClick={copyInstall}
@@ -137,7 +137,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="mt-auto flex items-center gap-2.5 border-t border-line px-2 pt-3">
-            <span className="flex size-[38px] flex-none items-center justify-center rounded-full bg-coral-100 text-sm font-bold text-handoff-ink">
+            <span className="flex size-[38px] flex-none items-center justify-center rounded-full bg-amber-bg text-sm font-bold text-amber-ink">
               {initials}
             </span>
             <div className="flex min-w-0 flex-1 flex-col leading-[1.35]">
@@ -149,7 +149,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               onClick={signOut}
               aria-label="Sign out"
               title="Sign out"
-              className="flex size-10 flex-none items-center justify-center rounded-xl text-ink-500 hover:bg-cloud hover:text-ink"
+              className="flex size-10 flex-none items-center justify-center rounded-xl text-ink-500 hover:bg-pearl hover:text-ink"
             >
               <SignOutIcon size={18} />
             </button>
@@ -162,9 +162,9 @@ function Shell({ children }: { children: React.ReactNode }) {
           <Link
             href="/"
             target="_blank"
-            className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-line bg-white px-[18px] font-bold text-ink no-underline hover:border-ocean-300"
+            className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-line bg-white px-[18px] font-bold text-ink no-underline hover:border-azure-300"
           >
-            <ChatIcon size={18} className="text-ocean-600" />
+            <ChatIcon size={18} className="text-azure-600" />
             Preview {settings.data?.botName ?? 'Sunny'}
             <ExternalIcon size={14} className="text-ink-400" />
           </Link>

@@ -72,9 +72,31 @@ export function OpenStatusPill({ suffix, short = false }: { suffix?: string; sho
         open ? 'bg-success-bg text-success-ink' : 'bg-warning-bg text-warning-ink'
       }`}
     >
-      <span className={`size-2 rounded-full ${open ? 'bg-success' : 'bg-coral-600'}`} />
+      <span className={`size-2 rounded-full ${open ? 'bg-success' : 'bg-amber'}`} />
       {text}
       {suffix && <span className="font-semibold opacity-80">· {suffix}</span>}
     </span>
+  );
+}
+
+/** Glass "Open today" card for the night hero. Shows the next opening when closed. */
+export function OpenTodayGlass({ className = '' }: { className?: string }) {
+  const status = useClinicStatus();
+  const today = status ? clinic.hours[clinicNow().dayIndex] : null;
+  const title = !status ? 'Open six days' : status.isOpen ? 'Open today' : 'Closed now';
+  const detail = !status
+    ? 'Mon – Sat'
+    : status.isOpen && today?.open && today.close
+      ? `${toHuman(today.open)} – ${toHuman(today.close)}`
+      : status.label.replace(/^Closed now · /, '').replace(/^opens/, 'Opens');
+  return (
+    <div aria-live="polite" className={`glass-float flex items-center gap-2.5 rounded-[18px] px-4 py-3 text-white ${className}`}>
+      <span className={`size-2.5 rounded-full ${status && !status.isOpen ? 'bg-amber' : 'bg-aqua-400 shadow-aqua'}`} />
+      <span className="text-sm leading-[1.3]">
+        <strong>{title}</strong>
+        <br />
+        <span className="text-haze-200">{detail}</span>
+      </span>
+    </div>
   );
 }

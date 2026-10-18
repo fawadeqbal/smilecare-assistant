@@ -9,28 +9,37 @@ export interface WidgetOptions {
   widgetKey: string;
   position: 'left' | 'right';
   openOnLoad: boolean;
-  /** Load the brand fonts (Gabarito, Figtree) from Google Fonts. Off = system fonts only. */
+  /** Load the brand font (Onest) from Google Fonts. Off = system fonts only. */
   brandFonts: boolean;
+  /** Show a small greeting bubble next to the launcher until the visitor first opens the chat. */
+  greeting: boolean;
 }
 
 const stroke = (paths: string, width = 2) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
 const ICONS = {
-  chat: stroke('<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>'),
   close: stroke('<path d="M6 6l12 12M18 6L6 18"/>', 2.2),
+  minimise: stroke('<path d="M6 9l6 6 6-6"/>', 2.2),
+  file: stroke('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
+  check: stroke('<path d="M5 12l5 5 9-10"/>', 2.8),
   send: stroke('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
   restart: stroke('<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5"/>'),
-  book: stroke('<path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM4 17h14"/>'),
-  calendar: stroke('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/>'),
   person: stroke('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
 };
 
-/** Sunny's avatar: a smile and a coral spark. `light` = brand smile on white. */
-const sunny = (size: number, light = false) =>
-  `<svg width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="${light ? '#FFFFFF' : 'var(--brand)'}"/><path d="M11 19 Q20 29 29 19" stroke="${light ? 'var(--brand)' : 'var(--brand-ink)'}" stroke-width="3.6" fill="none" stroke-linecap="round"/><circle cx="29" cy="11" r="3.2" fill="#FF8A65"/></svg>`;
+/** Sunny's face: a smile and two eyes. `light` = brand face on white. */
+const sunny = (size: number, light = false) => {
+  const face = light ? 'var(--brand)' : 'var(--brand-ink)';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="${light ? '#FFFFFF' : 'var(--brand)'}"/><path d="M11 19 Q20 29 29 19" stroke="${face}" stroke-width="3.6" fill="none" stroke-linecap="round"/><circle cx="14" cy="13.5" r="2" fill="${face}"/><circle cx="26" cy="13.5" r="2" fill="${face}"/></svg>`;
+};
 
-const ARC = '<svg class="arc" aria-hidden="true" viewBox="0 0 200 200"><path d="M30 80 Q100 170 170 80" stroke="#ffffff" stroke-opacity=".35" stroke-width="22" fill="none" stroke-linecap="round"/></svg>';
+/** Launcher face: the smile and eyes with the aqua spark, no circle (the button is the circle). */
+const LAUNCHER_FACE =
+  '<svg class="face" viewBox="0 0 40 40" aria-hidden="true"><path d="M11 19 Q20 29 29 19" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="14" cy="13.5" r="2" fill="currentColor"/><circle cx="26" cy="13.5" r="2" fill="currentColor"/><path d="M32 4l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z" fill="#2FE0C8"/></svg>';
+const LAUNCHER_CLOSE = ICONS.close.replace('<svg ', '<svg class="x" ');
+
+const ARC = '<svg class="arc" aria-hidden="true" viewBox="0 0 200 200"><path d="M30 80 Q100 170 170 80" stroke="#1B2340" stroke-width="22" fill="none" stroke-linecap="round"/></svg>';
 
 /** The chat widget UI. All DOM lives in a closed Shadow root on a single host element. */
 export class ChatWidget {
@@ -49,6 +58,7 @@ export class ChatWidget {
 
   private panel!: HTMLElement;
   private launcher!: HTMLButtonElement;
+  private greeting: HTMLButtonElement | null = null;
   private list!: HTMLElement;
   private chips!: HTMLElement;
   private input!: HTMLTextAreaElement;
@@ -82,8 +92,9 @@ export class ChatWidget {
   async open(): Promise<void> {
     if (!this.panel) return;
     this.panel.hidden = false;
+    this.dismissGreeting();
     this.launcher.setAttribute('aria-expanded', 'true');
-    this.launcher.innerHTML = ICONS.close;
+    this.launcher.innerHTML = LAUNCHER_CLOSE;
     this.launcher.setAttribute('aria-label', `Close chat with ${this.config!.botName}`);
     if (!this.historyLoaded) await this.loadHistory();
     setTimeout(() => this.input.focus(), 50);
@@ -93,7 +104,7 @@ export class ChatWidget {
     if (!this.panel) return;
     this.panel.hidden = true;
     this.launcher.setAttribute('aria-expanded', 'false');
-    this.launcher.innerHTML = ICONS.chat;
+    this.launcher.innerHTML = LAUNCHER_FACE;
     this.launcher.setAttribute('aria-label', `Chat with ${this.config!.botName}`);
   }
 
@@ -117,8 +128,21 @@ export class ChatWidget {
     style.textContent = styles;
 
     this.launcher = el('button', { class: 'launcher', 'aria-label': `Chat with ${c.botName}`, 'aria-expanded': 'false' }) as HTMLButtonElement;
-    this.launcher.innerHTML = ICONS.chat;
+    this.launcher.innerHTML = LAUNCHER_FACE;
     this.launcher.addEventListener('click', () => this.toggle());
+
+    const dock = el('div', { class: 'dock' });
+    if (this.options.greeting && !this.store.greeted()) {
+      this.greeting = el('button', { class: 'greeting', type: 'button', 'aria-label': `Chat with ${c.botName}: have a question? I can help.` }) as HTMLButtonElement;
+      this.greeting.innerHTML = '<strong>Hi there!</strong> Have a question about prices or insurance? I can help.';
+      this.greeting.hidden = true;
+      this.greeting.addEventListener('click', () => void this.open());
+      setTimeout(() => {
+        if (this.greeting && this.panel.hidden) this.greeting.hidden = false;
+      }, 1500);
+      dock.appendChild(this.greeting);
+    }
+    dock.appendChild(this.launcher);
 
     this.panel = el('section', { class: 'panel', role: 'dialog', 'aria-label': `Chat with ${c.botName}` });
     this.panel.hidden = true;
@@ -128,13 +152,13 @@ export class ChatWidget {
         <span class="avatar">${sunny(44, true)}<span class="online" aria-hidden="true"></span></span>
         <div class="title"><strong>${escapeHtml(c.botName)}</strong><span>${escapeHtml(c.businessName)} · replies instantly</span></div>
         <button type="button" class="icon-btn" data-action="restart" aria-label="Start a new conversation" title="New conversation">${ICONS.restart}</button>
-        <button type="button" class="icon-btn close" data-action="close" aria-label="Close chat">${ICONS.close}</button>
+        <button type="button" class="icon-btn close" data-action="close" aria-label="Minimise chat">${ICONS.minimise}</button>
       </header>
       <div class="messages" role="log" aria-live="polite"></div>
       <div class="chips"></div>
       <form class="composer">
         <div class="field">
-          <textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Type your message"></textarea>
+          <textarea rows="1" maxlength="2000" placeholder="Ask about prices, hours, insurance…" aria-label="Type your message"></textarea>
           <button class="send" type="submit" aria-label="Send message" disabled>${ICONS.send}</button>
         </div>
         <div class="footer">AI assistant · may make mistakes</div>
@@ -166,7 +190,14 @@ export class ChatWidget {
       if (e.key === 'Escape') this.close();
     });
 
-    this.root.append(style, this.panel, this.launcher);
+    this.root.append(style, this.panel, dock);
+  }
+
+  private dismissGreeting() {
+    if (!this.greeting) return;
+    this.greeting.remove();
+    this.greeting = null;
+    this.store.setGreeted();
   }
 
   private async loadHistory() {
@@ -313,13 +344,13 @@ export class ChatWidget {
     const titles = Array.from(new Set(sources.map((s) => s.documentTitle))).slice(0, 2);
     if (!titles.length) return;
     const line = el('span', { class: 'source' });
-    line.innerHTML = `${ICONS.book}From: ${titles.map(escapeHtml).join(', ')}`;
+    line.innerHTML = `${ICONS.file}From: ${titles.map(escapeHtml).join(', ')}`;
     bubble.appendChild(line);
   }
 
   private addNotice(text: string) {
     const node = el('div', { class: 'notice', role: 'status' });
-    node.innerHTML = `${ICONS.person}<span>${escapeHtml(text)}</span>`;
+    node.innerHTML = `<span class="tile">${ICONS.person}</span><span>${escapeHtml(text)}</span>`;
     this.list.appendChild(node);
     this.scroll();
   }
@@ -339,10 +370,10 @@ export class ChatWidget {
       ['When', b.preferredTime],
       ['Reference', b.id.slice(0, 8).toUpperCase()],
     ];
-    node.innerHTML = `<div class="label"><span>${ICONS.calendar}</span>Appointment requested</div><dl>${rows
+    node.innerHTML = `<div class="label"><span class="tile">${ICONS.check}</span><span><strong>Request sent.</strong> The team will call you to confirm the exact time.</span></div><dl>${rows
       .filter(([, v]) => v)
       .map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(v!)}</dd>`)
-      .join('')}</dl><span class="note">The team will call you to confirm the exact time.</span>`;
+      .join('')}</dl>`;
     this.list.appendChild(node);
     this.scroll();
   }
@@ -368,7 +399,7 @@ function loadBrandFonts() {
   if (document.querySelector('link[data-smilecare-fonts]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Gabarito:wght@600;700&display=swap';
+  link.href = 'https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap';
   link.setAttribute('data-smilecare-fonts', '');
   document.head.appendChild(link);
 }

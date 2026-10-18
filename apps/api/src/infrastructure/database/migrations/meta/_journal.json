@@ -15,6 +15,13 @@
       "when": 1792272812522,
       "tag": "0001_handoff_details",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792315161694,
+      "tag": "0002_brand_color_azure",
+      "breakpoints": true
     }
   ]
 }

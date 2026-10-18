@@ -87,3 +87,12 @@ export const ToothRowIcon = make(<path d="M3 12h18M7 8v8M12 8v8M17 8v8" />);
 export const ExternalIcon = make(<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />);
 export const MenuIcon = make(<path d="M4 7h16M4 12h16M4 17h16" />);
 export const UploadIcon = make(<path d="M12 16V4M7 9l5-5 5 5M4 20h16" />);
+export const PlusIcon = make(<path d="M12 6v12M6 12h12" />);
+export const MinusIcon = make(<path d="M6 12h12" />);
+export const AlertIcon = make(
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v5M12 16.5v.5" />
+  </>,
+);
+export const ChevronDownIcon = make(<path d="M6 9l6 6 6-6" />);

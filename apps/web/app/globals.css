@@ -1,52 +1,128 @@
 @import "tailwindcss";
 
 /*
- * SmileCare design system 2.0 — "Bright & friendly".
- * Ocean for trust and every primary action, coral for moments of delight,
- * soft rounded shapes and plenty of white space.
+ * SmileCare design system 3.0 — "Night & Glow".
+ * Deep night surfaces, one confident azure for every primary action and an
+ * aqua glow used sparingly for highlights on dark and success moments.
+ * Never white text on aqua: use Night on it. Amber is for staff attention.
  */
 @theme {
-  --color-ocean-50: #eef5ff;
-  --color-ocean-100: #dceaff;
-  --color-ocean-200: #b5d2ff;
-  --color-ocean-300: #8db8ff;
-  --color-ocean-500: #2f7bff;
-  --color-ocean-600: #0a66f0;
-  --color-ocean-700: #0050c8;
+  --color-azure-50: #eef1ff;
+  --color-azure-100: #dfe5ff;
+  --color-azure-200: #bcc8ff;
+  --color-azure-300: #9aabff;
+  --color-azure-400: #5b78ff;
+  --color-azure-600: #3355ff;
+  --color-azure-700: #2140e0;
 
-  --color-coral-50: #fff3ee;
-  --color-coral-100: #ffe2d6;
-  --color-coral-200: #ffc2ad;
-  --color-coral-400: #ff8a65;
-  --color-coral-600: #e5603b;
-  --color-coral-700: #b8431f;
+  --color-aqua-50: #e6fbf7;
+  --color-aqua-100: #c9f5ec;
+  --color-aqua-200: #93ebdb;
+  --color-aqua-400: #2fe0c8;
+  --color-aqua-500: #14bfa8;
+  --color-aqua-600: #0e9c8a;
+  --color-aqua-700: #0b7466;
 
-  --color-ink: #0b1b2e;
-  --color-ink-700: #3a4b63;
-  --color-ink-500: #51627a;
-  --color-ink-400: #64748b;
-  --color-cloud: #f5f8fc;
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
+  --color-night-950: #0a0f24;
+  --color-night-900: #0b1020;
+  --color-night-800: #1b2340;
+  --color-night-700: #262e48;
+  --color-night-600: #3b4460;
+  --color-night-500: #59627e;
+
+  /* Ink aliases keep body copy readable in one place. */
+  --color-ink: #0b1020;
+  --color-ink-700: #3b4460;
+  --color-ink-500: #59627e;
+  --color-ink-400: #646c88;
+
+  --color-pearl: #f5f7fb;
+  --color-mist: #eef0f6;
+  --color-line: #e4e7f0;
+  --color-line-strong: #cdd2e1;
+  --color-haze: #aeb6cf;
+  --color-haze-200: #cdd3e6;
 
   --color-success: #0e9f6e;
   --color-success-bg: #e6f7f0;
   --color-success-ink: #0a7a55;
   --color-warning-bg: #fff4db;
   --color-warning-ink: #92400e;
-  --color-handoff-bg: #ffe2d6;
-  --color-handoff-ink: #9a3412;
+  --color-amber: #ffd27a;
+  --color-amber-bg: #ffefd1;
+  --color-amber-ink: #8a4b00;
   --color-danger: #d92d20;
   --color-danger-bg: #feeceb;
   --color-danger-ink: #b42318;
 
-  --font-display: var(--font-gabarito), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
 
-  --shadow-rest: 0 1px 2px rgba(11, 27, 46, 0.06), 0 1px 1px rgba(11, 27, 46, 0.04);
-  --shadow-raised: 0 2px 4px rgba(11, 27, 46, 0.04), 0 12px 28px -6px rgba(10, 102, 240, 0.18);
-  --shadow-overlay: 0 4px 8px rgba(11, 27, 46, 0.05), 0 32px 64px -16px rgba(11, 27, 46, 0.28);
-  --shadow-glow: 0 12px 28px -8px rgba(10, 102, 240, 0.6);
+  --shadow-rest: 0 1px 2px rgba(11, 16, 32, 0.06);
+  --shadow-raised: 0 2px 4px rgba(11, 16, 32, 0.04), 0 16px 32px -10px rgba(51, 85, 255, 0.28);
+  --shadow-overlay: 0 4px 8px rgba(11, 16, 32, 0.05), 0 40px 80px -24px rgba(11, 16, 32, 0.4);
+  --shadow-glow: 0 12px 34px -8px rgba(51, 85, 255, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --shadow-glow-sm: 0 10px 24px -8px rgba(51, 85, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --shadow-aqua: 0 0 12px #2fe0c8;
+
+  --animate-rise: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-drift: drift 6s ease-in-out infinite;
+  --animate-drift-slow: drift 7s ease-in-out 1s infinite;
+  --animate-pop: pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-rise-late: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-pulse-dot: pulse-dot 2.2s ease-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes pulse-dot {
+    0% {
+      box-shadow: 0 0 0 0 rgba(47, 224, 200, 0.6);
+    }
+    80%,
+    100% {
+      box-shadow: 0 0 0 8px rgba(47, 224, 200, 0);
+    }
+  }
 }
 
 html {
@@ -62,8 +138,61 @@ body {
   line-height: 1.6;
 }
 
+/* Instrument Serif italic: one or two accent words per headline, never more. */
+.sv {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Glass: white 8 %, border 16 %, blur 14. Only on Night surfaces. */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Floating glass over mixed backgrounds (e.g. a card corner): tinted so text stays legible. */
+.glass-float {
+  background: rgba(20, 27, 54, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Soft radial glows on Night. Never a full-page gradient. */
+.night-glow {
+  background-color: var(--color-night-950);
+  background-image:
+    radial-gradient(60% 70% at 85% 10%, rgba(51, 85, 255, 0.45), transparent 60%),
+    radial-gradient(40% 50% at 10% 90%, rgba(47, 224, 200, 0.16), transparent 60%);
+}
+
+/* Cards lift 4 px on hover. */
+.lift {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 2px 4px rgba(11, 16, 32, 0.04),
+    0 24px 48px -16px rgba(51, 85, 255, 0.32);
+}
+
+.night-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(80% 70% at 50% 30%, #000 30%, transparent 80%);
+}
+
 :focus-visible {
-  outline: 3px solid var(--color-ocean-300);
+  outline: 3px solid var(--color-azure-300);
   outline-offset: 3px;
   border-radius: 8px;
 }
@@ -73,6 +202,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

@@ -32,7 +32,7 @@ async function main() {
       widgetKey,
       botName: 'Sunny',
       welcomeMessage: "Hi, I'm Sunny from SmileCare. I can answer questions about treatments, prices and hours, or request an appointment for you.",
-      brandColor: '#0A66F0',
+      brandColor: '#3355FF',
       suggestedQuestions: ['How much is teeth whitening?', 'Are you open on Saturday?', 'Do you take Delta Dental?', 'I want to book a cleaning'],
       handoffEmail: 'frontdesk@smilecare-dental.example',
       notificationEmail: 'frontdesk@smilecare-dental.example',

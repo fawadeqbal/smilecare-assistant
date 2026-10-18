@@ -189,6 +189,16 @@ export interface PublicBookingSummary {
   status: BookingStatus;
 }
 
+/** Sent by a clinic website's own booking form (no chat involved). */
+export interface PublicBookingRequest {
+  widgetKey: string;
+  patientName: string;
+  phone: string;
+  service?: string;
+  preferredTime: string;
+  notes?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Conversations (admin)
 // ---------------------------------------------------------------------------
